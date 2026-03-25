@@ -20,12 +20,18 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module vga(
+module vga #(
+    parameter X_MIN = 11'd384,
+    parameter X_MAX = 11'd1823,
+    parameter Y_MIN = 11'd31,
+    parameter Y_MAX = 11'd930
+    )(
     input clk, rst, 
     input [3:0] draw_r, draw_g, draw_b,
     output [10:0] curr_x, curr_y,
     output [3:0] pix_r, pix_g, pix_b,
-    output hsync, vsync
+    output hsync, vsync,
+    output frame_tick
     );
 
 // Internal Signals
@@ -35,9 +41,16 @@ reg [10:0] curr_x_r;
 reg [10:0] curr_y_r;
 
 wire display_region;
+
+// Frame end detection
 wire line_end = (hcount == 11'd1903);
 wire frame_end = (vcount == 10'd931);
 
+// Generate frame_tick pulse
+//      Once the entire frame has been drawn
+//      and the drawing resets back to top left hand
+//      corner, frame_tick pulses high
+assign frame_tick = (frame_end && line_end);
 
 
 // hsync vsync assign combinational

@@ -20,24 +20,36 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module drawcon(
+module drawcon #(
+    parameter SHIP_WIDTH = 100,
+    parameter SHIP_HEIGHT = 100,
+    parameter BULLET_SIZE = 10
+    )(
     input clk, rst,
     input [10:0] curr_x, curr_y,
     input [10:0] blkpos_x, blkpos_y,
+    input [10:0] bullet_x, bullet_y,
+    input bullet_active,
     output [3:0] draw_r, draw_g, draw_b
     );
     
 reg [3:0] blk_r, blk_g, blk_b;
 reg [3:0] bg_r, bg_g, bg_b;
+reg [3:0] bullet_r, bullet_g, bullet_b;
 
-// Signals for the image
-parameter blk_size_x = 100, blk_size_y = 100;
+// Signals for the ship image
+parameter blk_size_x = SHIP_WIDTH, blk_size_y = SHIP_HEIGHT;
 reg [13:0] addr;
 wire [11:0] rom_pixel;
 
 
-// Background Colour
+// ==========================================================
+// --- Background Colour
+// ==========================================================
+
 always @* begin
+  // Creates an all black background &
+  // a white border of 10px around the edge
     if((curr_x < 11'd10) || (curr_x > 11'd1430) ||
        (curr_y < 11'd10) || (curr_y > 11'd890)) begin
         bg_r = 4'b1111;
@@ -50,7 +62,10 @@ always @* begin
     end
 end
 
-// Image Block
+
+// ==========================================================
+// --- Source Mario Head
+// ==========================================================
 always @ (posedge clk) begin
     if (!rst) begin
         blk_r <= 4'b0000;
@@ -73,13 +88,42 @@ always @ (posedge clk) begin
     end
 end
 
-assign draw_r = (blk_r != 4'b0000) ? blk_r : bg_r;
-assign draw_g = (blk_g != 4'b0000) ? blk_g : bg_g;
-assign draw_b = (blk_b != 4'b0000) ? blk_b : bg_b;
+
+// ==========================================================
+// --- Bullet Rendering (White Square)
+// ==========================================================
+always @* begin
+    if (bullet_active &&
+        (curr_x >= bullet_x) && (curr_x < bullet_x + BULLET_SIZE) &&
+        (curr_y >= bullet_y) && (curr_y < bullet_y + BULLET_SIZE)) begin
+        bullet_r = 4'b1111;
+        bullet_g = 4'b1111;
+        bullet_b = 4'b1111;
+    end else begin
+        bullet_r = 4'b0000;
+        bullet_g = 4'b0000;
+        bullet_b = 4'b0000;
+    end
+end
+
+
+// ==========================================================
+// --- Priority Layering: Bullet > Ship > Background
+// ==========================================================
+assign draw_r = (bullet_r != 4'b0000) ? bullet_r :
+                (blk_r != 4'b0000) ? blk_r : bg_r;
+assign draw_g = (bullet_g != 4'b0000) ? bullet_g :
+                (blk_g != 4'b0000) ? blk_g : bg_g;
+assign draw_b = (bullet_b != 4'b0000) ? bullet_b :
+                (blk_b != 4'b0000) ? blk_b : bg_b;
 
 
 
-// Instatitate Memory
+// ==========================================================
+// --- Block Memory Assignment 
+// ==========================================================
+
+  // Mario Head Image
 blk_mem_gen_0 inst
 (
 .clka(clk),
