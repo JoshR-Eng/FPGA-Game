@@ -42,6 +42,9 @@ wire [3:0] draw_r, draw_g, draw_b;
 wire [10:0] curr_x, curr_y;
 wire frame_tick;
 
+// Accelerometer data
+wire [14:0] acl_data;
+
 // Ship position
 wire [10:0] ship_x, ship_y;
 
@@ -90,6 +93,21 @@ localparam MAX_BULLETS  = 16;
 
 
 // ==========================================================
+// --- Accelerometer Abstraction
+// ==========================================================
+
+// Accelerometer SPI Interface
+accOutput accel_inst (
+  .CLK100MHZ(clk),
+  .ACL_MISO(ACL_MISO),
+  .ACL_MOSI(ACL_MOSI),
+  .ACL_SCLK(ACL_SCLK),
+  .ACL_CSN(ACL_CSN),
+  .acl_data(acl_data)  // {X[14:10], Y[9:5], Z[4:0]}
+);
+
+
+// ==========================================================
 // --- Fire Button Assignment
 // ==========================================================
 // btn[1] = Fire bullet (using center button on board)
@@ -102,7 +120,7 @@ assign fire_trigger = btn[1];
 // --- Game Logic Modules
 // ==========================================================
 
-// Ship Movement (Uses Accelerometer to move)
+// Ship Movement (Uses Accelerometer data to move)
 shipMovement #(
   .X_MIN(SCREEN_X_MIN),
   .X_MAX(SCREEN_X_MAX),
@@ -114,10 +132,7 @@ shipMovement #(
   .clk(pixclk),
   .rst(rst),
   .frame_tick(frame_tick),
-  .ACL_MISO(ACL_MISO),
-  .ACL_MOSI(ACL_MOSI),
-  .ACL_SCLK(ACL_SCLK),
-  .ACL_CSN(ACL_CSN),
+  .acl_data(acl_data),
   .ship_x(ship_x),
   .ship_y(ship_y)
   );

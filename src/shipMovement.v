@@ -35,11 +35,8 @@ module shipMovement #(
   input rst,
   input frame_tick,
 
-  // Accelerometer hardware (SPI Interface)
-  input ACL_MISO,
-  output ACL_MOSI,
-  output ACL_SCLK,
-  output ACL_CSN,
+  // Accelerometer data (from hardware abstraction in top level)
+  input [14:0] acl_data,
 
   // Ship Position Outputs
   output [10:0] ship_x,
@@ -52,10 +49,7 @@ module shipMovement #(
 // --- Internal Signals 
 // ==========================================================
 
-  // Raw accelerometer data from hardware module
-  wire [14:0] acl_data;
-
-  // Extract tilt info.
+  // Extract tilt info from accelerometer data
   // Data Format: [14:10]=X-axis, [9:5]=Y-axis, [4:0]=Z-axis
   // Each axis: [4]=sign, [3:0]=magnitude
   wire x_sign, y_sign;
@@ -69,17 +63,10 @@ module shipMovement #(
 
 
 // ==========================================================
-// --- Accelerometere Abstraction
+// --- Extract Tilt from Accelerometer Data
 // ==========================================================
-  
-  accOutput accel_inst(
-  .CLK100MHZ(clk),
-  .ACL_MISO(ACL_MISO),
-  .ACL_MOSI(ACL_MOSI),
-  .ACL_SCLK(ACL_SCLK),
-  .ACL_CSN(ACL_CSN),
-  .acl_data(acl_data) // 15-bit: {X[4:0], Y[4:0], Z[4:0]}
-  );
+// acl_data comes from game_top (hardware abstraction layer)
+// Format: {X[14:10], Y[9:5], Z[4:0]}
 
 
 
