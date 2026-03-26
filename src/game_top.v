@@ -56,6 +56,16 @@ wire bullet_active [0:15];
 wire [7:0] gun_heat;
 // LED output already declared as port
 
+// Scalar wires for drawcon (bullet[0] only for now)
+wire [10:0] bullet0_x;
+wire [10:0] bullet0_y;
+wire bullet0_active;
+
+// Extract bullet[0] from arrays
+assign bullet0_x = bullet_x[0];
+assign bullet0_y = bullet_y[0];
+assign bullet0_active = bullet_active[0];
+
 
 // ==========================================================
 // --- CONFIGURATION
@@ -182,9 +192,9 @@ drawcon #(
   .rst(rst),
   .blkpos_x(ship_x), 
   .blkpos_y(ship_y),
-  .bullet_x(bullet_x[0]),        // Use first bullet only for now
-  .bullet_y(bullet_y[0]),
-  .bullet_active(bullet_active[0]),
+  .bullet_x(bullet0_x),
+  .bullet_y(bullet0_y),
+  .bullet_active(bullet0_active),
   .draw_r(draw_r), 
   .draw_g(draw_g), 
   .draw_b(draw_b),
