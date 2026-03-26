@@ -83,7 +83,7 @@ integer i;                // Loop counter block
 
       // Spawning Logic
       if (fire_trigger && (gun_heat_reg < OVERHEAT_THRESHOLD)
-                       && !bullet_active_reg[spawn_slot]) begin
+                       && bullet_active_reg[spawn_slot]) begin
           bullet_active_reg[spawn_slot] <= 1'b1;
           bullet_x_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_x)
           bullet_y_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_y)
