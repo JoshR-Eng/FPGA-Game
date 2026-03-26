@@ -8,7 +8,8 @@ WAVES = waves.vcd
 # --- Testbench Examples ---
 # Uncomment one of these to set SOURCES, or define your own
 #SOURCES = tb/mouse_tb.v src/mouse.v
-SOURCES = tb/bulletManager/bulletManager_tb.v src/bulletManager.v
+#SOURCES = tb/bulletManager/bulletManager_tb.v src/bulletManager.v
+SOURCES = tb/bullet_e2e_tb.v src/bulletManager.v 
 
 
 # "sim" recipe: This compiles, runs and open the waves
