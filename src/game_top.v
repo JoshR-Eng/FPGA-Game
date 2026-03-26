@@ -32,7 +32,8 @@ module game_top(
     output ACL_CSN,
     
     output [3:0] pix_r, pix_g, pix_b,
-    output hsync, vsync
+    output hsync, vsync,
+    output [15:0] LED    // Heat display LEDs
     );
 
 // Internal Wires
@@ -48,9 +49,12 @@ wire [14:0] acl_data;
 // Ship position
 wire [10:0] ship_x, ship_y;
 
-// Bullet data
-wire [10:0] bullet_x, bullet_y;
-wire bullet_active;
+// Bullet data (arrays from bulletManager)
+wire [10:0] bullet_x [0:15];
+wire [10:0] bullet_y [0:15];
+wire bullet_active [0:15];
+wire [7:0] gun_heat;
+// LED output already declared as port
 
 
 // ==========================================================
@@ -157,7 +161,9 @@ bulletManager #(
   .ship_y(ship_y),
   .bullet_x(bullet_x),
   .bullet_y(bullet_y),
-  .bullet_active(bullet_active)
+  .bullet_active(bullet_active),
+  .gun_heat(gun_heat),
+  .LED(LED)
   );
 
 
@@ -176,9 +182,9 @@ drawcon #(
   .rst(rst),
   .blkpos_x(ship_x), 
   .blkpos_y(ship_y),
-  .bullet_x(bullet_x),
-  .bullet_y(bullet_y),
-  .bullet_active(bullet_active),
+  .bullet_x(bullet_x[0]),        // Use first bullet only for now
+  .bullet_y(bullet_y[0]),
+  .bullet_active(bullet_active[0]),
   .draw_r(draw_r), 
   .draw_g(draw_g), 
   .draw_b(draw_b),

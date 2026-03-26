@@ -33,13 +33,13 @@ module drawcon #(
     output [3:0] draw_r, draw_g, draw_b
     );
     
-reg [3:0] blk_r, blk_g, blk_b;
+reg [3:0] blk_r = 0, blk_g = 0, blk_b = 0;  // Initialize at power-up
 reg [3:0] bg_r, bg_g, bg_b;
-reg [3:0] bullet_r, bullet_g, bullet_b;
+reg [3:0] bullet_r = 0, bullet_g = 0, bullet_b = 0;  // Initialize at power-up
 
 // Signals for the ship image
 parameter blk_size_x = SHIP_WIDTH, blk_size_y = SHIP_HEIGHT;
-reg [13:0] addr;
+reg [13:0] addr = 0;  // Initialize at power-up to prevent garbage
 wire [11:0] rom_pixel;
 
 
