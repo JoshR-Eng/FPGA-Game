@@ -96,9 +96,9 @@ always @* begin
     if (bullet_active &&
         (curr_x >= bullet_x) && (curr_x < bullet_x + BULLET_SIZE) &&
         (curr_y >= bullet_y) && (curr_y < bullet_y + BULLET_SIZE)) begin
-        bullet_r = 4'b1111;
-        bullet_g = 4'b1111;
-        bullet_b = 4'b1111;
+        bullet_r = 4'b1111;  // RED for debugging
+        bullet_g = 4'b0000;
+        bullet_b = 4'b0000;
     end else begin
         bullet_r = 4'b0000;
         bullet_g = 4'b0000;

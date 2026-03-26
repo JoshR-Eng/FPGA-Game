@@ -85,8 +85,8 @@ integer i;                // Loop counter block
       if (fire_trigger && (gun_heat_reg < OVERHEAT_THRESHOLD)
                        && !bullet_active_reg[spawn_slot]) begin
           bullet_active_reg[spawn_slot] <= 1'b1;
-          bullet_x_reg[spawn_slot] <= ship_x;
-          bullet_y_reg[spawn_slot] <= ship_y;
+          bullet_x_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_x)
+          bullet_y_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_y)
           gun_heat_reg <= gun_heat_reg + HEAT_PER_SHOT;
           spawn_slot <= spawn_slot + 1'b1; // Round Robin
       end

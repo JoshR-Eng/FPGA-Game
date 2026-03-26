@@ -76,7 +76,7 @@ localparam SHIP_WIDTH   = 11'd100;
 localparam SHIP_HEIGHT  = 11'd100;
 
   // Bullet parameters
-localparam BULLET_SPEED = 8'd8;
+localparam BULLET_SPEED = 8'd2;  // DEBUG: Slow bullet (was 8)
 localparam MAX_BULLETS  = 16;
 localparam HEAT_PER_SHOT = 8'd32;
 localparam COOLDOWN_RATE = 8'd2;
@@ -176,7 +176,8 @@ bulletManager #(
     //        For drawing ship and bullet at given positions     
 drawcon #(
   .SHIP_WIDTH(SHIP_WIDTH),
-  .SHIP_HEIGHT(SHIP_HEIGHT)
+  .SHIP_HEIGHT(SHIP_HEIGHT),
+  .BULLET_SIZE(50)  // DEBUG: Make bullet HUGE (50x50 instead of 10x10)
   ) drawcon_inst(
   .clk(pixclk), 
   .rst(rst),
