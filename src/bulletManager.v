@@ -81,14 +81,20 @@ integer i;                // Loop counter block
       gun_heat_reg <= 8'd0;
     end else if (frame_tick) begin
 
-      // Spawning Logic
+      // Spawning Logic (increases heat)
       if (fire_trigger && (gun_heat_reg < OVERHEAT_THRESHOLD)
-                       && bullet_active_reg[spawn_slot]) begin
+                       && !bullet_active_reg[spawn_slot]) begin
           bullet_active_reg[spawn_slot] <= 1'b1;
           bullet_x_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_x)
           bullet_y_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_y)
           gun_heat_reg <= gun_heat_reg + HEAT_PER_SHOT;
           spawn_slot <= spawn_slot + 1'b1; // Round Robin
+      end else begin
+        // Heat Cooldown Logic (only when not firing)
+        if (gun_heat_reg >= COOLDOWN_RATE)
+          gun_heat_reg <= gun_heat_reg - COOLDOWN_RATE;
+        else
+          gun_heat_reg <= 8'd0;
       end
       
       // Movement Logic
@@ -102,12 +108,6 @@ integer i;                // Loop counter block
           end
         end
       end
-
-      // Heat Cooldown Logic
-    if (gun_heat_reg >= COOLDOWN_RATE)
-      gun_heat_reg <= gun_heat_reg - COOLDOWN_RATE;
-    else
-      gun_heat_reg <= 8'd0;
 
   end  // Close else if (frame_tick)
 end    // Close always @(posedge clk)

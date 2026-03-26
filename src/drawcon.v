@@ -110,12 +110,13 @@ end
 // ==========================================================
 // --- Priority Layering: Bullet > Ship > Background
 // ==========================================================
-assign draw_r = (bullet_r != 4'b0000) ? bullet_r :
-                (blk_r != 4'b0000) ? blk_r : bg_r;
-assign draw_g = (bullet_g != 4'b0000) ? bullet_g :
-                (blk_g != 4'b0000) ? blk_g : bg_g;
-assign draw_b = (bullet_b != 4'b0000) ? bullet_b :
-                (blk_b != 4'b0000) ? blk_b : bg_b;
+// Check if bullet is visible (any channel non-zero)
+wire bullet_visible = (bullet_r != 4'b0000) || (bullet_g != 4'b0000) || (bullet_b != 4'b0000);
+wire ship_visible = (blk_r != 4'b0000) || (blk_g != 4'b0000) || (blk_b != 4'b0000);
+
+assign draw_r = bullet_visible ? bullet_r : ship_visible ? blk_r : bg_r;
+assign draw_g = bullet_visible ? bullet_g : ship_visible ? blk_g : bg_g;
+assign draw_b = bullet_visible ? bullet_b : ship_visible ? blk_b : bg_b;
 
 
 
