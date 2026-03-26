@@ -60,7 +60,7 @@ wire bullet_active;
   // Screen Size
 localparam SCREEN_X_MIN = 11'd10;
 localparam SCREEN_X_MAX = 11'd1430;
-localparam  SCREEN_Y_MIN = 11'd10;
+localparam SCREEN_Y_MIN = 11'd10;
 localparam SCREEN_Y_MAX = 11'd890;
 
   // Ship Starting Position
@@ -74,6 +74,9 @@ localparam SHIP_HEIGHT  = 11'd100;
   // Bullet parameters
 localparam BULLET_SPEED = 8'd8;
 localparam MAX_BULLETS  = 16;
+localparam HEAT_PER_SHOT = 8'd32;
+localparam COOLDOWN_RATE = 8'd2;
+localparam OVERHEAT_THRESHOLD = 8'd255;
 
 
 
@@ -140,7 +143,11 @@ shipMovement #(
 // Bullet Manager (Single bullet, moves right)
 bulletManager #(
   .BULLET_SPEED(BULLET_SPEED),
-  .SCREEN_X_MAX(SCREEN_X_MAX)
+  .HEAT_PER_SHOT(HEAT_PER_SHOT),
+  .COOLDOWN_RATE(COOLDOWN_RATE),
+  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD),
+  .SCREEN_X_MAX(SCREEN_X_MAX),
+  .SCREEN_Y_MAX(SCREEN_Y_MAX)
   ) bullet_inst(
   .clk(pixclk),
   .rst(rst),
