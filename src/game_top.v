@@ -54,7 +54,11 @@ wire [10:0] bullet_x;
 wire [10:0] bullet_y;
 wire bullet_active;
 wire [7:0] gun_heat;
-// LED output already declared as port
+wire [15:0] LED_internal;
+
+// DEBUG: Test LED connection
+assign LED[0] = 1'b1;  // Always on to verify LEDs work
+assign LED[15:1] = LED_internal[15:1];  // Heat bar from bulletManager
 
 
 // ==========================================================
@@ -118,8 +122,29 @@ accOutput accel_inst (
 // --- Fire Button Assignment
 // ==========================================================
 // btn[1] = Fire bullet (using center button on board)
+// DEBUG: Auto-fire bullets every 60 frames (1 second)
+reg [7:0] auto_fire_counter = 0;
+reg auto_fire_pulse = 0;
+
+always @(posedge pixclk) begin
+  if (!rst) begin
+    auto_fire_counter <= 0;
+    auto_fire_pulse <= 0;
+  end else if (frame_tick) begin
+    if (auto_fire_counter == 8'd59) begin
+      auto_fire_counter <= 0;
+      auto_fire_pulse <= 1;
+    end else begin
+      auto_fire_counter <= auto_fire_counter + 1;
+      auto_fire_pulse <= 0;
+    end
+  end else begin
+    auto_fire_pulse <= 0;
+  end
+end
+
 wire fire_trigger;
-assign fire_trigger = btn[1];
+assign fire_trigger = auto_fire_pulse;  // Auto-fire, ignore button
 
 
 
@@ -163,7 +188,7 @@ bulletManager #(
   .bullet_y(bullet_y),
   .bullet_active(bullet_active),
   .gun_heat(gun_heat),
-  .LED(LED)
+  .LED(LED_internal)
   );
 
 
