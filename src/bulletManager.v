@@ -42,10 +42,10 @@ module bulletManager #(
   // Ship Position
   input [10:0] ship_x, ship_y,
 
-  // Bullet Position & existance
-  output [10:0] bullet_x [0:MAX_BULLETS-1],
-  output [10:0] bullet_y [0:MAX_BULLETS-1],
-  output bullet_active [0:MAX_BULLETS-1],
+  // Bullet Position & existence (single bullet outputs for synthesis)
+  output [10:0] bullet_x,
+  output [10:0] bullet_y,
+  output bullet_active,
   output [7:0] gun_heat,
   output [15:0] LED
   );
@@ -116,14 +116,11 @@ end    // Close always @(posedge clk)
 // --- Final Assignment 
 // ==========================================================
  
-  genvar j;
-  generate
-    for (j=0; j< MAX_BULLETS; j=j+1) begin: bullet_output
-      assign bullet_x[j] = bullet_x_reg[j];
-      assign bullet_y[j] = bullet_y_reg[j];
-      assign bullet_active[j] = bullet_active_reg[j];
-    end
-  endgenerate
+  // Output only bullet[0] for synthesis compatibility
+  // Internal arrays still handle 16 bullets
+  assign bullet_x = bullet_x_reg[0];
+  assign bullet_y = bullet_y_reg[0];
+  assign bullet_active = bullet_active_reg[0];
 
   assign gun_heat = gun_heat_reg;
 

@@ -49,22 +49,12 @@ wire [14:0] acl_data;
 // Ship position
 wire [10:0] ship_x, ship_y;
 
-// Bullet data (arrays from bulletManager)
-wire [10:0] bullet_x [0:15];
-wire [10:0] bullet_y [0:15];
-wire bullet_active [0:15];
+// Bullet data (single bullet from bulletManager)
+wire [10:0] bullet_x;
+wire [10:0] bullet_y;
+wire bullet_active;
 wire [7:0] gun_heat;
 // LED output already declared as port
-
-// Scalar wires for drawcon (bullet[0] only for now)
-wire [10:0] bullet0_x;
-wire [10:0] bullet0_y;
-wire bullet0_active;
-
-// Extract bullet[0] from arrays
-assign bullet0_x = bullet_x[0];
-assign bullet0_y = bullet_y[0];
-assign bullet0_active = bullet_active[0];
 
 
 // ==========================================================
@@ -192,9 +182,9 @@ drawcon #(
   .rst(rst),
   .blkpos_x(ship_x), 
   .blkpos_y(ship_y),
-  .bullet_x(bullet0_x),
-  .bullet_y(bullet0_y),
-  .bullet_active(bullet0_active),
+  .bullet_x(bullet_x),
+  .bullet_y(bullet_y),
+  .bullet_active(bullet_active),
   .draw_r(draw_r), 
   .draw_g(draw_g), 
   .draw_b(draw_b),
