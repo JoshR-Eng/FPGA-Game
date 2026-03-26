@@ -26,7 +26,7 @@ module bulletManager #(
   parameter BULLET_SPEED        = 8,
   parameter HEAT_PER_SHOT       = 8'd32,
   parameter COOLDOWN_RATE       = 8'd2,
-  parameter OVERHEAT_THRESHOLD  = 8'd255,
+  parameter OVERHEAT_THRESHOLD  = 8'd200,
       // Screen Size
   parameter SCREEN_X_MAX        = 11'd1430,
   parameter SCREEN_Y_MAX        = 11'd890
@@ -109,7 +109,8 @@ integer i;                // Loop counter block
     else
       gun_heat_reg <= 8'd0;
 
-  end
+  end  // Close else if (frame_tick)
+end    // Close always @(posedge clk)
 
 // ==========================================================
 // --- Final Assignment 
@@ -128,6 +129,10 @@ integer i;                // Loop counter block
 
 
   // Map 16 LEDs to number of LEDs
+  //      Could work on this logic?
+  //      LED[13:0]: Linear Increase as Temp increase
+  //      LED[14]  : Warning LED - lights when close to max temp
+  //      LED[15]  : Overheat LED - Can't shoot when this is on
   assign LED[0]  = (gun_heat_reg >= 8'd16);
   assign LED[1]  = (gun_heat_reg >= 8'd32);
   assign LED[2]  = (gun_heat_reg >= 8'd48);
@@ -142,7 +147,7 @@ integer i;                // Loop counter block
   assign LED[11] = (gun_heat_reg >= 8'd192);
   assign LED[12] = (gun_heat_reg >= 8'd208);
   assign LED[13] = (gun_heat_reg >= 8'd224);
-  assign LED[14] = (gun_heat_reg >= 8'd240);
+  assign LED[14] = (gun_heat_reg >= 8'd192);
   assign LED[15] = (gun_heat_reg >= OVERHEAT_THRESHOLD);
 
 endmodule

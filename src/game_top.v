@@ -76,7 +76,7 @@ localparam BULLET_SPEED = 8'd8;
 localparam MAX_BULLETS  = 16;
 localparam HEAT_PER_SHOT = 8'd32;
 localparam COOLDOWN_RATE = 8'd2;
-localparam OVERHEAT_THRESHOLD = 8'd255;
+localparam OVERHEAT_THRESHOLD = 8'd200;
 
 
 
