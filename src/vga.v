@@ -20,12 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module vga #(
-    parameter X_MIN = 11'd384,
-    parameter X_MAX = 11'd1823,
-    parameter Y_MIN = 11'd31,
-    parameter Y_MAX = 11'd930
-    )(
+module vga(
     input clk, rst, 
     input [3:0] draw_r, draw_g, draw_b,
     output [10:0] curr_x, curr_y,
@@ -34,24 +29,23 @@ module vga #(
     output frame_tick
     );
 
-// Internal Signals
+// ==========================================================
+// --- Internal Signals
+// ==========================================================
+
 reg [10:0] hcount;
 reg [9:0] vcount;
 reg [10:0] curr_x_r;
 reg [10:0] curr_y_r;
 
 wire display_region;
-
-// Frame end detection
 wire line_end = (hcount == 11'd1903);
 wire frame_end = (vcount == 10'd931);
 
-// Generate frame_tick pulse
-//      Once the entire frame has been drawn
-//      and the drawing resets back to top left hand
-//      corner, frame_tick pulses high
-assign frame_tick = (frame_end && line_end);
 
+// ==========================================================
+// --- hsync & vsync logic
+// ==========================================================
 
 // hsync vsync assign combinational
 assign hsync = ((hcount >= 11'd0) && (hcount <= 11'd151));
@@ -92,6 +86,10 @@ assign pix_r = (display_region) ? draw_r : 4'b0000;
     
     
     
+// ==========================================================
+// --- Current Pixel being drawn logic
+// ==========================================================
+    
 // curr_x synchronous
     always @(posedge clk) begin
         if (!rst)
@@ -121,9 +119,21 @@ assign pix_r = (display_region) ? draw_r : 4'b0000;
         end
     end 
 
-
-// Final Assign
 assign curr_x = curr_x_r;
 assign curr_y = curr_y_r;
 
+
+// ==========================================================
+// --- 60Hz Frame tick 
+// ==========================================================
+reg frame_tick_r;
+always @(posedge clk) begin
+    frame_tick_r <= (vcount == 10'd931) && (hcount == 11'd0);
+end
+
+assign frame_tick = frame_tick_r;
+
+// ==========================================================
+// --- END
+// ==========================================================
 endmodule

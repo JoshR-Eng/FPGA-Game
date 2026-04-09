@@ -24,75 +24,27 @@ module game_top(
     input clk, rst, 
     input [2:0] sw,
     input [4:0] btn,
-    
-    // Accelerometer pins
-    input ACL_MISO,
-    output ACL_MOSI,
-    output ACL_SCLK,
-    output ACL_CSN,
-    
     output [3:0] pix_r, pix_g, pix_b,
-    output hsync, vsync,
-    output [15:0] LED    // Heat display LEDs
+    output hsync, vsync
     );
 
-// Internal Wires
+// ==========================================================
+// --- Internal Wiring
+// ==========================================================
 wire pixclk;
 wire [3:0] pix_r_aux, pix_g_aux, pix_b_aux;
 wire [3:0] draw_r, draw_g, draw_b;
 wire [10:0] curr_x, curr_y;
 wire frame_tick;
-
-// Accelerometer data
-wire [14:0] acl_data;
-
-// Ship position
-wire [10:0] ship_x, ship_y;
-
-// Bullet data (single bullet from bulletManager)
-wire [10:0] bullet_x;
-wire [10:0] bullet_y;
-wire bullet_active;
-wire [7:0] gun_heat;
-wire [15:0] LED_internal;
-
-// DEBUG: Test LED connection
-assign LED[0] = 1'b1;  // Always on to verify LEDs work
-assign LED[15:1] = LED_internal[15:1];  // Heat bar from bulletManager
+reg [10:0] blkpos_x, blkpos_y;
 
 
 // ==========================================================
-// --- CONFIGURATION
+// --- Clock Generators
 // ==========================================================
 
-  // Screen Size
-localparam SCREEN_X_MIN = 11'd10;
-localparam SCREEN_X_MAX = 11'd1430;
-localparam SCREEN_Y_MIN = 11'd10;
-localparam SCREEN_Y_MAX = 11'd890;
-
-  // Ship Starting Position
-localparam SHIP_START_X = 11'd720;
-localparam SHIP_START_Y = 11'd450;
-
-  // Ship Size
-localparam SHIP_WIDTH   = 11'd100;
-localparam SHIP_HEIGHT  = 11'd100;
-
-  // Bullet parameters
-localparam BULLET_SPEED = 8'd2;  // DEBUG: Slow bullet (was 8)
-localparam MAX_BULLETS  = 16;
-localparam HEAT_PER_SHOT = 8'd32;
-localparam COOLDOWN_RATE = 8'd2;
-localparam OVERHEAT_THRESHOLD = 8'd200;
-
-
-
-// ==========================================================
-// --- Clock Generation 
-// ==========================================================
-
-// 106.5 MHz Clock Generator 
+// --- 106 MHz Clock
+// Clock Generator
   clk_wiz_0 inst
   (
   // Clock out ports  
@@ -101,144 +53,77 @@ localparam OVERHEAT_THRESHOLD = 8'd200;
   .clk_in1(clk)
   );
 
+//// --- 60 Hz Game Clock
+//// Game clocok Generation
+//always @(posedge clk) begin
+//    if(!rst) begin
+//        clk_div <= 0;
+//        game_clk <= 0;
+//    end else begin
+//        if(clk_div == 20'hffff ) begin
+//            clk_div <= 0;
+//            game_clk <= !game_clk;
+//        end else begin
+//            clk_div <= clk_div + 1;
+//        end
+//    end
+//end
 
 
 // ==========================================================
-// --- Accelerometer Abstraction
+// --- Block Movement
 // ==========================================================
-
-// Accelerometer SPI Interface
-accOutput accel_inst (
-  .CLK100MHZ(clk),
-  .ACL_MISO(ACL_MISO),
-  .ACL_MOSI(ACL_MOSI),
-  .ACL_SCLK(ACL_SCLK),
-  .ACL_CSN(ACL_CSN),
-  .acl_data(acl_data)  // {X[14:10], Y[9:5], Z[4:0]}
-);
-
-
-// ==========================================================
-// --- Fire Button Assignment
-// ==========================================================
-// btn[1] = Fire bullet (using center button on board)
-// DEBUG: Auto-fire bullets every 60 frames (1 second)
-reg [7:0] auto_fire_counter = 0;
-reg auto_fire_pulse = 0;
-
 always @(posedge pixclk) begin
-  if (!rst) begin
-    auto_fire_counter <= 0;
-    auto_fire_pulse <= 0;
-  end else if (frame_tick) begin
-    if (auto_fire_counter == 8'd59) begin
-      auto_fire_counter <= 0;
-      auto_fire_pulse <= 1;
-    end else begin
-      auto_fire_counter <= auto_fire_counter + 1;
-      auto_fire_pulse <= 0;
+    if (!rst) begin
+        blkpos_x <= 11'd720;
+        blkpos_y <= 11'd450;
+    end else if (frame_tick) begin
+        if (btn[0]) begin
+            blkpos_x <= 11'd10;
+            blkpos_y <= 11'd10;
+        end else begin
+            case(btn[4:1])
+                4'b0010: begin                          // left
+                         if(blkpos_x > 11'd10) begin
+                            blkpos_x <= blkpos_x - 4; 
+                         end end
+               4'b0100: begin                          // right
+                         if(blkpos_x < 11'd1430 - 11'd100) begin
+                            blkpos_x <= blkpos_x + 4; 
+                         end end
+               4'b1000: begin                          // down
+                        if(blkpos_y < (11'd890 - 11'd100)) begin
+                            blkpos_y <= blkpos_y + 4; 
+                         end end
+               4'b0001: begin                          // up
+                         if(blkpos_y > 11'd10 ) begin
+                            blkpos_y <= blkpos_y - 4; 
+                         end end
+               default: begin
+                            blkpos_x <= blkpos_x;
+                            blkpos_y <= blkpos_y;
+                        end
+            endcase
+        end
     end
-  end else begin
-    auto_fire_pulse <= 0;
-  end
 end
 
-wire fire_trigger;
-assign fire_trigger = auto_fire_pulse;  // Auto-fire, ignore button
-
-
-
-// ==========================================================
-// --- Game Logic Modules
-// ==========================================================
-
-// Ship Movement (Uses Accelerometer data to move)
-shipMovement #(
-  .X_MIN(SCREEN_X_MIN),
-  .X_MAX(SCREEN_X_MAX),
-  .Y_MIN(SCREEN_Y_MIN),
-  .Y_MAX(SCREEN_Y_MAX),
-  .START_X(SHIP_START_X),
-  .START_Y(SHIP_START_Y) 
-  ) ship_inst(
-  .clk(pixclk),
-  .rst(rst),
-  .frame_tick(frame_tick),
-  .acl_data(acl_data),
-  .ship_x(ship_x),
-  .ship_y(ship_y)
-  );
-
-// Bullet Manager (Single bullet, moves right)
-bulletManager #(
-  .BULLET_SPEED(BULLET_SPEED),
-  .HEAT_PER_SHOT(HEAT_PER_SHOT),
-  .COOLDOWN_RATE(COOLDOWN_RATE),
-  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD),
-  .SCREEN_X_MAX(SCREEN_X_MAX),
-  .SCREEN_Y_MAX(SCREEN_Y_MAX)
-  ) bullet_inst(
-  .clk(pixclk),
-  .rst(rst),
-  .frame_tick(frame_tick),
-  .fire_trigger(fire_trigger),
-  .ship_x(ship_x),
-  .ship_y(ship_y),
-  .bullet_x(bullet_x),
-  .bullet_y(bullet_y),
-  .bullet_active(bullet_active),
-  .gun_heat(gun_heat),
-  .LED(LED_internal)
-  );
-
-
-
-// ==========================================================
-// --- Display Modules
-// ==========================================================
-
-    // Drawcon Module
-    //        For drawing ship and bullet at given positions     
-drawcon #(
-  .SHIP_WIDTH(SHIP_WIDTH),
-  .SHIP_HEIGHT(SHIP_HEIGHT),
-  .BULLET_SIZE(50)  // DEBUG: Make bullet HUGE (50x50 instead of 10x10)
-  ) drawcon_inst(
-  .clk(pixclk), 
-  .rst(rst),
-  .blkpos_x(ship_x), 
-  .blkpos_y(ship_y),
-  .bullet_x(bullet_x),
-  .bullet_y(bullet_y),
-  .bullet_active(bullet_active),
-  .draw_r(draw_r), 
-  .draw_g(draw_g), 
-  .draw_b(draw_b),
-  .curr_x(curr_x), 
-  .curr_y(curr_y)
-  );
-
+// Instantiations
+    // Instantiate Drawcon Module
+drawcon drawcon_inst(
+    .clk(pixclk), .rst(rst),
+    .blkpos_x(blkpos_x), .blkpos_y(blkpos_y),
+    .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
+    .curr_x(curr_x), .curr_y(curr_y)
+    );
     // Instantiate VGA Module
-    //        For sending drawing data to the vga
-vga #(
-  .X_MIN(SCREEN_X_MIN),
-  .X_MAX(SCREEN_X_MAX),
-  .Y_MIN(SCREEN_Y_MIN),
-  .Y_MAX(SCREEN_Y_MAX)
-  ) vga_inst(
-  .draw_r(draw_r), 
-  .draw_g(draw_g), 
-  .draw_b(draw_b),
-  .clk(pixclk), 
-  .rst(rst),
-  .pix_r(pix_r), 
-  .pix_g(pix_g), 
-  .pix_b(pix_b),
-  .curr_x(curr_x), 
-  .curr_y(curr_y),
-  .hsync(hsync), 
-  .vsync(vsync),
-  .frame_tick(frame_tick)
-  );
+vga vga_inst(
+    .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
+    .clk(pixclk), .rst(rst),
+    .pix_r(pix_r), .pix_g(pix_g), .pix_b(pix_b),
+    .curr_x(curr_x), .curr_y(curr_y),
+    .hsync(hsync), .vsync(vsync),
+    .frame_tick(frame_tick)
+    );
  
 endmodule
