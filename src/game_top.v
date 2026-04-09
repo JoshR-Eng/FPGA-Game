@@ -21,22 +21,85 @@
 
 
 module game_top(
+    // System
     input clk, rst, 
     input [2:0] sw,
     input [4:0] btn,
+    
+    // VGA
     output [3:0] pix_r, pix_g, pix_b,
-    output hsync, vsync
+    output hsync, vsync,
+
+    
+    // Accelerometer 
+    input ACL_MISO,
+    output ACL_MOSI,
+    output ACL_SCLK,
+    output ACL_CSN
     );
 
 // ==========================================================
 // --- Internal Wiring
 // ==========================================================
+
+// Internal Clocks & Timing
 wire pixclk;
-wire [3:0] pix_r_aux, pix_g_aux, pix_b_aux;
+wire frame_tick;
+
+// VGA
 wire [3:0] draw_r, draw_g, draw_b;
 wire [10:0] curr_x, curr_y;
-wire frame_tick;
-reg [10:0] blkpos_x, blkpos_y;
+
+// Ship Position
+wire [10:0] ship_x, ship_y;
+
+// Accelerometer data
+wire [14:0] acl_data;
+
+// ==========================================================
+// --- CONFIGURATION
+// ==========================================================
+
+  // Screen Size
+localparam SCREEN_X_MIN = 11'd10;
+localparam SCREEN_X_MAX = 11'd1430;
+localparam SCREEN_Y_MIN = 11'd10;
+localparam SCREEN_Y_MAX = 11'd890;
+
+  // Ship Starting Position
+localparam SHIP_START_X = 11'd720;
+localparam SHIP_START_Y = 11'd450;
+
+  // Ship Size
+localparam SHIP_WIDTH   = 11'd100;
+localparam SHIP_HEIGHT  = 11'd100;
+
+  // Accelerometer Deadzone
+localparam DEADZONE = 4'd2;
+
+
+// ==========================================================
+// --- Game Logic Modules
+// ==========================================================
+
+// Ship Movement (Uses Accelerometer data to move)
+shipMovement #(
+  .X_MIN(SCREEN_X_MIN),
+  .X_MAX(SCREEN_X_MAX),
+  .Y_MIN(SCREEN_Y_MIN),
+  .Y_MAX(SCREEN_Y_MAX),
+  .START_X(SHIP_START_X),
+  .START_Y(SHIP_START_Y),
+  .SHIP_HEIGHT(SHIP_HEIGHT),
+  .SHIP_WIDTH(SHIP_WIDTH)
+  ) ship_inst(
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick),
+  .acl_data(acl_data),
+  .ship_x(ship_x),
+  .ship_y(ship_y)
+  );
 
 
 // ==========================================================
@@ -70,49 +133,69 @@ reg [10:0] blkpos_x, blkpos_y;
 //end
 
 
-// ==========================================================
-// --- Block Movement
-// ==========================================================
-always @(posedge pixclk) begin
-    if (!rst) begin
-        blkpos_x <= 11'd720;
-        blkpos_y <= 11'd450;
-    end else if (frame_tick) begin
-        if (btn[0]) begin
-            blkpos_x <= 11'd10;
-            blkpos_y <= 11'd10;
-        end else begin
-            case(btn[4:1])
-                4'b0010: begin                          // left
-                         if(blkpos_x > 11'd10) begin
-                            blkpos_x <= blkpos_x - 4; 
-                         end end
-               4'b0100: begin                          // right
-                         if(blkpos_x < 11'd1430 - 11'd100) begin
-                            blkpos_x <= blkpos_x + 4; 
-                         end end
-               4'b1000: begin                          // down
-                        if(blkpos_y < (11'd890 - 11'd100)) begin
-                            blkpos_y <= blkpos_y + 4; 
-                         end end
-               4'b0001: begin                          // up
-                         if(blkpos_y > 11'd10 ) begin
-                            blkpos_y <= blkpos_y - 4; 
-                         end end
-               default: begin
-                            blkpos_x <= blkpos_x;
-                            blkpos_y <= blkpos_y;
-                        end
-            endcase
-        end
-    end
-end
+//// ==========================================================
+//// --- Block Movement
+//// ==========================================================
+//always @(posedge pixclk) begin
+//    if (!rst) begin
+//        ship_x <= 11'd720;
+//        ship_y <= 11'd450;
+//    end else if (frame_tick) begin
+//        if (btn[0]) begin
+//            ship_x <= 11'd10;
+//            ship_y <= 11'd10;
+//        end else begin
+//            case(btn[4:1])
+//                4'b0010: begin                          // left
+//                         if(ship_x > 11'd10) begin
+//                            ship_x <= ship_x - 4; 
+//                         end end
+//               4'b0100: begin                          // right
+//                         if(ship_x < 11'd1430 - 11'd100) begin
+//                            ship_x <= ship_x + 4; 
+//                         end end
+//               4'b1000: begin                          // down
+//                        if(ship_y < (11'd890 - 11'd100)) begin
+//                            ship_y <= ship_y + 4; 
+//                         end end
+//               4'b0001: begin                          // up
+//                         if(ship_y > 11'd10 ) begin
+//                            ship_y <= ship_y - 4; 
+//                         end end
+//               default: begin
+//                            ship_x <= ship_x;
+//                            ship_y <= ship_y;
+//                        end
+//            endcase
+//        end
+//    end
+//end
 
-// Instantiations
+
+// ==========================================================
+// --- Accelerometer
+// ==========================================================
+
+// Accelerometer SPI Interface
+accOutput accel_inst (
+  .CLK100MHZ(clk),
+  .ACL_MISO(ACL_MISO),
+  .ACL_MOSI(ACL_MOSI),
+  .ACL_SCLK(ACL_SCLK),
+  .ACL_CSN(ACL_CSN),
+  .acl_data(acl_data)  // {X[14:10], Y[9:5], Z[4:0]}
+);
+
+
+
+// ==========================================================
+// --- Display Logic
+// ==========================================================
+
     // Instantiate Drawcon Module
 drawcon drawcon_inst(
     .clk(pixclk), .rst(rst),
-    .blkpos_x(blkpos_x), .blkpos_y(blkpos_y),
+    .ship_x(ship_x), .ship_y(ship_y),
     .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
     .curr_x(curr_x), .curr_y(curr_y)
     );

@@ -22,101 +22,88 @@
 
 module drawcon #(
     parameter SHIP_WIDTH = 100,
-    parameter SHIP_HEIGHT = 100,
-    parameter BULLET_SIZE = 10
+    parameter SHIP_HEIGHT = 100
     )(
     input clk, rst,
     input [10:0] curr_x, curr_y,
-    input [10:0] blkpos_x, blkpos_y,
-    input [10:0] bullet_x, bullet_y,
-    input bullet_active,
+    input [10:0] ship_x, ship_y,
     output [3:0] draw_r, draw_g, draw_b
     );
     
+
+// ==========================================================
+// --- Internal Wiring
+// ==========================================================    
+
 reg [3:0] blk_r = 0, blk_g = 0, blk_b = 0;  // Initialize at power-up
-reg [3:0] bg_r, bg_g, bg_b;
-reg [3:0] bullet_r = 0, bullet_g = 0, bullet_b = 0;  // Initialize at power-up
+reg [3:0] bg_r=4'h0, bg_g=4'h0, bg_b=4'h0;
 
 // Signals for the ship image
-parameter blk_size_x = SHIP_WIDTH, blk_size_y = SHIP_HEIGHT;
 reg [13:0] addr = 0;  // Initialize at power-up to prevent garbage
 wire [11:0] rom_pixel;
 
 
+// Object Detection
+wire ship_on;
+integer i;
+
+// Draw Multiplexer
+reg [3:0] mux_r;
+reg [3:0] mux_g;
+reg [3:0] mux_b;
+
 // ==========================================================
-// --- Background Colour
+// --- Determine if current pixel is over an item
+// ==========================================================
+
+// Check for ship
+assign ship_on = (curr_x >= ship_x) && ( curr_x < (ship_x + SHIP_WIDTH)) &&
+                 (curr_y >= ship_y) && ( curr_y < (ship_y + SHIP_HEIGHT));
+
+
+
+// ==========================================================
+// --- Draw Priority Multiplexer
 // ==========================================================
 
 always @* begin
-  // Creates an all black background &
-  // a white border of 10px around the edge
-    if((curr_x < 11'd10) || (curr_x > 11'd1430) ||
-       (curr_y < 11'd10) || (curr_y > 11'd890)) begin
-        bg_r = 4'b1111;
-        bg_g = 4'b1111;
-        bg_b = 4'b1111;
-    end else begin
-        bg_r = 4'b0000;
-        bg_g = 4'b0000;
-        bg_b = 4'b0000;
+    // Default: BACKGROUND
+    //  Standard black space background
+    mux_r = 4'h0;
+    mux_g = 4'h0;
+    mux_b = 4'h1;
+    
+    
+    // Layer 1: SHIP
+    if (ship_on && (rom_pixel[11:0] != 12'h000)) begin
+        mux_r = rom_pixel[11:8];
+        mux_g = rom_pixel[7:4];
+        mux_b = rom_pixel[3:0];
     end
+    
 end
 
 
+// Final continous assignment to the output ports
+assign draw_r = mux_r;
+assign draw_g = mux_g;
+assign draw_b = mux_b;
+
+
 // ==========================================================
-// --- Source Mario Head
+// --- BRAM Address Calculation (The Math Way)
 // ==========================================================
-always @ (posedge clk) begin
-    if (!rst) begin
-        blk_r <= 4'b0000;
-        blk_g <= 4'b0000;
-        blk_b <= 4'b0000;
+wire [10:0] local_ship_x = curr_x - ship_x;
+wire [10:0] local_ship_y = curr_y - ship_y;
+
+always @(posedge clk) begin
+    if (ship_on) begin
+        // Address = (Y * Width) + X
+        addr <= (local_ship_y * SHIP_WIDTH) + local_ship_x;
+    end else begin
         addr <= 0;
-    end else if ((curr_x < blkpos_x) || (curr_x > blkpos_x + blk_size_x - 1) ||
-                 (curr_y < blkpos_y) || (curr_y > blkpos_y + blk_size_y - 1)) begin
-        blk_r <= 4'b0000;
-        blk_g <= 4'b0000;
-        blk_b <= 4'b0000;
-    end else begin
-        blk_r <= rom_pixel[11:8];
-        blk_g <= rom_pixel[7:4];
-        blk_b <= rom_pixel[3:0];
-        if ((curr_x == blkpos_x) && (curr_y == blkpos_y))
-            addr <= 0;
-        else
-            addr <= addr + 1;
     end
 end
-
-
-// ==========================================================
-// --- Bullet Rendering (White Square)
-// ==========================================================
-always @* begin
-    if (bullet_active &&
-        (curr_x >= bullet_x) && (curr_x < bullet_x + BULLET_SIZE) &&
-        (curr_y >= bullet_y) && (curr_y < bullet_y + BULLET_SIZE)) begin
-        bullet_r = 4'b1111;  // RED for debugging
-        bullet_g = 4'b0000;
-        bullet_b = 4'b0000;
-    end else begin
-        bullet_r = 4'b0000;
-        bullet_g = 4'b0000;
-        bullet_b = 4'b0000;
-    end
-end
-
-
-// ==========================================================
-// --- Priority Layering: Bullet > Ship > Background
-// ==========================================================
-// Check if bullet is visible (any channel non-zero)
-wire bullet_visible = (bullet_r != 4'b0000) || (bullet_g != 4'b0000) || (bullet_b != 4'b0000);
-wire ship_visible = (blk_r != 4'b0000) || (blk_g != 4'b0000) || (blk_b != 4'b0000);
-
-assign draw_r = bullet_visible ? bullet_r : ship_visible ? blk_r : bg_r;
-assign draw_g = bullet_visible ? bullet_g : ship_visible ? blk_g : bg_g;
-assign draw_b = bullet_visible ? bullet_b : ship_visible ? blk_b : bg_b;
 
 
 
@@ -124,7 +111,6 @@ assign draw_b = bullet_visible ? bullet_b : ship_visible ? blk_b : bg_b;
 // --- Block Memory Assignment 
 // ==========================================================
 
-  // Mario Head Image
 blk_mem_gen_0 inst
 (
 .clka(clk),
