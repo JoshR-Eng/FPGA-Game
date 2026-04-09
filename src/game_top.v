@@ -91,7 +91,8 @@ shipMovement #(
   .START_X(SHIP_START_X),
   .START_Y(SHIP_START_Y),
   .SHIP_HEIGHT(SHIP_HEIGHT),
-  .SHIP_WIDTH(SHIP_WIDTH)
+  .SHIP_WIDTH(SHIP_WIDTH),
+  .DEADZONE(DEADZONE)
   ) ship_inst(
   .clk(pixclk),
   .rst(rst),
