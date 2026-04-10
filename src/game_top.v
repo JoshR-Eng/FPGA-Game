@@ -78,7 +78,7 @@ localparam SHIP_WIDTH   = 11'd100;
 localparam SHIP_HEIGHT  = 11'd100;
 
   // Accelerometer Deadzone
-localparam DEADZONE = 4'd8;
+localparam DEADZONE = 4'd2;
 
 
 // ==========================================================
