@@ -27,6 +27,8 @@ module bulletManager #(
   parameter HEAT_PER_SHOT       = 8'd32,
   parameter COOLDOWN_RATE       = 8'd2,
   parameter OVERHEAT_THRESHOLD  = 8'd200,
+  parameter BULLET_WIDTH        = 4'd10,
+  parameter BULLET_HEIGHT       = 4'd10,
       // Screen Size
   parameter SCREEN_X_MAX        = 11'd1430,
   parameter SCREEN_Y_MAX        = 11'd890
@@ -38,16 +40,16 @@ module bulletManager #(
 
   // Mouse Input
   input fire_trigger,
+  input [4:0] btn, // Temporary use of buttons before mouse
+
+  // Drawing Position
+  input [10:0] curr_x, curr_y,
 
   // Ship Position
   input [10:0] ship_x, ship_y,
 
-  // Bullet Position & existence (single bullet outputs for synthesis)
-  output [10:0] bullet_x,
-  output [10:0] bullet_y,
-  output bullet_active,
-  output [7:0] gun_heat,
-  output [15:0] LED
+  // Boolean if curr_x/y is on bullet pos
+  output reg on_bullet
   );
 
 
@@ -55,13 +57,21 @@ module bulletManager #(
 // --- Internal Signals 
 // ==========================================================
 
-// Bullets
-reg [10:0] bullet_x_reg       [0:MAX_BULLETS-1];
-reg [10:0] bullet_y_reg       [0:MAX_BULLETS-1];
-reg        bullet_active_reg  [0:MAX_BULLETS-1];
+// Bullets Position
+reg [10:0] bullet_x       [0:MAX_BULLETS-1];
+reg [10:0] bullet_y       [0:MAX_BULLETS-1];
+
+// Bullet Velocity
+reg signed [3:0] vel_x    [0:MAX_BULLETS-1];
+reg signed [3:0] vel_y    [0:MAX_BULLETS-1];
+
+// Bullet Spawning
+reg        bullet_active  [0:MAX_BULLETS-1];
 reg [3:0]  spawn_slot;    // Which spot to spawn bullet? (0-15)
+reg        spawned;
+
+// Bullet Heating
 reg [7:0]  gun_heat_reg;  // Current heat level
-integer i;                // Loop counter block
 
 
 
@@ -69,82 +79,88 @@ integer i;                // Loop counter block
 // ==========================================================
 // --- Bullet Logic 
 // ==========================================================
-  always @(posedge clk) begin
-    if (!rst) begin
-      for (i=0; i < MAX_BULLETS; i=i+1) begin
-        // Reset State
-        bullet_active_reg[i] <= 1'b0;
-        bullet_x_reg[i] <= 11'd0;
-        bullet_y_reg[i] <= 11'd0;
-      end
-      spawn_slot <= 4'd0;
-      gun_heat_reg <= 8'd0;
-    end else if (frame_tick) begin
 
-      // Spawning Logic (increases heat)
-      if (fire_trigger && (gun_heat_reg < OVERHEAT_THRESHOLD)
-                       && !bullet_active_reg[spawn_slot]) begin
-          bullet_active_reg[spawn_slot] <= 1'b1;
-          bullet_x_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_x)
-          bullet_y_reg[spawn_slot] <= 11'd200;  // DEBUG: Fixed position (was ship_y)
-          gun_heat_reg <= gun_heat_reg + HEAT_PER_SHOT;
-          spawn_slot <= spawn_slot + 1'b1; // Round Robin
-      end else begin
-        // Heat Cooldown Logic (only when not firing)
-        if (gun_heat_reg >= COOLDOWN_RATE)
-          gun_heat_reg <= gun_heat_reg - COOLDOWN_RATE;
-        else
-          gun_heat_reg <= 8'd0;
-      end
-      
-      // Movement Logic
-      for (i=0; i < MAX_BULLETS; i=i+1) begin
-        if (bullet_active_reg[i]) begin
-          // Move Bullet
-          bullet_x_reg[i] <= bullet_x_reg[i] + BULLET_SPEED;
-          // Check bounds
-          if ( bullet_x_reg[i] > SCREEN_X_MAX ) begin
-            bullet_active_reg[i] <= 1'b0;
-          end
-        end
-      end
+// --- Ensure fire_trigger is only enabled for a single clock cycle
+reg fire_prev;
+wire fire_pulse = fire_trigger && !fire_prev;
+reg fire_pending;
+always @(posedge clk) begin
+  fire_prev <= fire_trigger;
+  if (!rst)
+      fire_pending <= 1'b0;
+  else if (fire_pulse)
+      fire_pending <= 1'b1;
+  else if (frame_tick)
+      fire_pending <= 1'b0;
+end
 
-  end  // Close else if (frame_tick)
-end    // Close always @(posedge clk)
+
+// --- Spawn bullet on trigger
+integer j;
+always @(posedge clk) begin
+  // Reset Logic
+  if (!rst) begin
+    for (j=0; j<MAX_BULLETS; j=j+1) begin
+      bullet_active[j] <= 1'b0;
+      bullet_x[j] <= 11'd0;
+      bullet_y[j] <= 11'd0;
+    end
+    gun_heat_reg <= 8'd0;
+
+  end else if (frame_tick) begin
+    spawned = 1'b0;
+
+    // Spawning bullet logic
+    if (fire_pending && (gun_heat_reg<OVERHEAT_THRESHOLD)) begin
+    for (j=0; j<MAX_BULLETS; j=j+1) begin
+      if (!bullet_active[j] && !spawned) begin
+        // Spawn bullet at ship loc
+        bullet_x[j] <= ship_x;
+        bullet_y[j] <= ship_y;
+        // Toggle bullet as active 
+        bullet_active[j]  <= 1'b1;
+        spawned = 1'b1;
+        // Add bullet heat
+        gun_heat_reg <= gun_heat_reg + HEAT_PER_SHOT;
+      end
+    end
+
+    // Cooldown bullet otherwise 
+    end else begin
+      if (gun_heat_reg >= COOLDOWN_RATE)
+        gun_heat_reg <= gun_heat_reg - COOLDOWN_RATE;
+      else
+        gun_heat_reg <= 8'd0;
+    end
+
+    // Bullet Movement Logic ...
+    // Should start with basic movement to the right first?
+    for (j=0; j<MAX_BULLETS; j=j+1) begin
+      if (bullet_active[j]) begin
+        if ( (bullet_x[j]+BULLET_SPEED) > SCREEN_X_MAX) begin
+          bullet_active[j] <= 1'b0;
+        end else
+          bullet_x[j] <= bullet_x[j] + BULLET_SPEED;
+      end
+    end
+  end
+end
+
 
 // ==========================================================
-// --- Final Assignment 
+// --- Drawing Bullet
 // ==========================================================
- 
-  // Output only bullet[0] for synthesis compatibility
-  // Internal arrays still handle 16 bullets
-  assign bullet_x = bullet_x_reg[0];
-  assign bullet_y = bullet_y_reg[0];
-  assign bullet_active = bullet_active_reg[0];
 
-  assign gun_heat = gun_heat_reg;
+integer i;
+always @* begin
+  on_bullet = 1'b0;
+  for (i=0; i<MAX_BULLETS; i=i+1) begin
+    if (bullet_active[i] &&
+        (curr_x >= bullet_x[i]) && (curr_x < bullet_x[i]+BULLET_WIDTH) &&
+        (curr_y >= bullet_y[i]) && (curr_y < bullet_y[i]+BULLET_HEIGHT))
+        on_bullet = 1'b1;
+  end
+end
 
-
-  // Map 16 LEDs to number of LEDs
-  //      Could work on this logic?
-  //      LED[13:0]: Linear Increase as Temp increase
-  //      LED[14]  : Warning LED - lights when close to max temp
-  //      LED[15]  : Overheat LED - Can't shoot when this is on
-  assign LED[0]  = (gun_heat_reg >= 8'd16);
-  assign LED[1]  = (gun_heat_reg >= 8'd32);
-  assign LED[2]  = (gun_heat_reg >= 8'd48);
-  assign LED[3]  = (gun_heat_reg >= 8'd64);
-  assign LED[4]  = (gun_heat_reg >= 8'd80);
-  assign LED[5]  = (gun_heat_reg >= 8'd96);
-  assign LED[6]  = (gun_heat_reg >= 8'd112);
-  assign LED[7]  = (gun_heat_reg >= 8'd128);
-  assign LED[8]  = (gun_heat_reg >= 8'd144);
-  assign LED[9]  = (gun_heat_reg >= 8'd160);
-  assign LED[10] = (gun_heat_reg >= 8'd176);
-  assign LED[11] = (gun_heat_reg >= 8'd192);
-  assign LED[12] = (gun_heat_reg >= 8'd208);
-  assign LED[13] = (gun_heat_reg >= 8'd224);
-  assign LED[14] = (gun_heat_reg >= 8'd192);
-  assign LED[15] = (gun_heat_reg >= OVERHEAT_THRESHOLD);
 
 endmodule
