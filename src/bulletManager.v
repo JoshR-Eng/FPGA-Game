@@ -67,7 +67,6 @@ reg signed [3:0] vel_y    [0:MAX_BULLETS-1];
 
 // Bullet Spawning
 reg        bullet_active  [0:MAX_BULLETS-1];
-reg [3:0]  spawn_slot;    // Which spot to spawn bullet? (0-15)
 reg        spawned;
 
 // Bullet Heating

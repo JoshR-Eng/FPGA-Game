@@ -56,6 +56,9 @@ wire [10:0] ship_x, ship_y;
 // Accelerometer data
 wire [14:0] acl_data;
 
+// Bullet drawing signal
+wire on_bullet;
+
 // ==========================================================
 // --- CONFIGURATION
 // ==========================================================
@@ -101,6 +104,23 @@ shipMovement #(
   .ship_x(ship_x),
   .ship_y(ship_y)
   );
+
+// Bullet Manager
+bulletManager #(
+  .SCREEN_X_MAX(SCREEN_X_MAX),
+  .SCREEN_Y_MAX(SCREEN_Y_MAX)
+  ) bullet_inst (
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick),
+  .fire_trigger(btn[0]),
+  .btn(btn),
+  .curr_x(curr_x),
+  .curr_y(curr_y),
+  .ship_x(ship_x),
+  .ship_y(ship_y),
+  .on_bullet(on_bullet)
+);
 
 
 // ==========================================================
@@ -198,7 +218,8 @@ drawcon drawcon_inst(
     .clk(pixclk), .rst(rst),
     .ship_x(ship_x), .ship_y(ship_y),
     .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
-    .curr_x(curr_x), .curr_y(curr_y)
+    .curr_x(curr_x), .curr_y(curr_y),
+    .on_bullet(on_bullet)
     );
     // Instantiate VGA Module
 vga vga_inst(

@@ -25,6 +25,7 @@ module drawcon #(
     parameter SHIP_HEIGHT = 100
     )(
     input clk, rst,
+    input on_bullet,
     input [10:0] curr_x, curr_y,
     input [10:0] ship_x, ship_y,
     output [3:0] draw_r, draw_g, draw_b
@@ -73,8 +74,14 @@ always @* begin
     mux_g = 4'h0;
     mux_b = 4'h1;
     
-    
-    // Layer 1: SHIP
+    // Layer 1: BULLET (red)
+    if (on_bullet) begin
+      mux_r = 4'hF;
+      mux_g = 4'h0;
+      mux_b = 4'h0;
+    end
+
+    // Layer 2: SHIP
     if (ship_on && (rom_pixel[11:0] != 12'h000)) begin
         mux_r = rom_pixel[11:8];
         mux_g = rom_pixel[7:4];
