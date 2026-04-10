@@ -26,6 +26,7 @@ module drawcon #(
     )(
     input clk, rst,
     input on_bullet,
+    input on_cursor,
     input [10:0] curr_x, curr_y,
     input [10:0] ship_x, ship_y,
     output [3:0] draw_r, draw_g, draw_b
@@ -88,6 +89,12 @@ always @* begin
         mux_b = rom_pixel[3:0];
     end
     
+    // Layer 3: Crosshair
+    if (on_cursor) begin
+      mux_r = 4'hF;
+      mux_g = 4'hF;
+      mux_b = 4'hF;
+    end
 end
 
 

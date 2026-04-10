@@ -53,6 +53,9 @@ module bulletManager #(
 
   // Boolean if curr_x/y is on bullet pos
   output reg on_bullet
+
+  // Boolean if curr_x/y is on cursor
+  output on_cursor
   );
 
 
@@ -148,6 +151,56 @@ always @(posedge clk) begin
   end
 end
 
+
+
+
+// ==========================================================
+// --- Crosshair 
+// ==========================================================
+
+// Should very soon take this out of the bulletManager module
+// for now I will control direction with the buttons
+// but eventually I want to use the mouse for this
+
+parameter CURSOR_ARM = 8;   // Half-length of each bar
+parameter CURSOR_THICK = 1; // Half-width of each bar
+
+parameter CURSOR_SPEED = 10;
+
+assign on_cursor = (
+  // Horizontal bar
+  (curr_x >= (cursor_x - CURSOR_ARM)   ) && (curr_x <= (cursor_x + CURSOR_ARM)   ) &&
+  (curr_y >= (cursor_y - CURSOR_THICK) ) && (curr_y <= (cursor_y + CURSOR_THICK) ) 
+  ||
+  // Vertical bar
+  (curr_x >= (cursor_x - CURSOR_THICK) )  && (curr_x <= (cursor_x + CURSOR_THICK) ) &&
+  (curr_y >= (cursor_y - CURSOR_ARM)   )  && (curr_y <= (cursor_y + CURSOR_ARM)   ) 
+  );
+
+// Crosshair movement
+// Left
+if (btn[2] && cursor_x > (X_MIN + CURSOR_ARM + CURSOR_SPEED))
+    cursor_x <= cursor_x - CURSOR_SPEED;
+else if (btn[2])
+    cursor_x <= X_MIN + CURSOR_ARM;
+
+// Right
+if (btn[3] && cursor_x < (X_MAX - CURSOR_ARM - CURSOR_SPEED))
+    cursor_x <= cursor_x + CURSOR_SPEED;
+else if (btn[3])
+    cursor_x <= X_MAX - CURSOR_ARM;
+
+// Up  (y decreases going up on screen)
+if (btn[1] && cursor_y > (Y_MIN + CURSOR_ARM + CURSOR_SPEED))
+    cursor_y <= cursor_y - CURSOR_SPEED;
+else if (btn[1])
+    cursor_y <= Y_MIN + CURSOR_ARM;
+
+// Down
+if (btn[4] && cursor_y < (Y_MAX - CURSOR_ARM - CURSOR_SPEED))
+    cursor_y <= cursor_y + CURSOR_SPEED;
+else if (btn[4])
+    cursor_y <= Y_MAX - CURSOR_ARM;
 
 // ==========================================================
 // --- Drawing Bullet

@@ -59,6 +59,9 @@ wire [14:0] acl_data;
 // Bullet drawing signal
 wire on_bullet;
 
+// Cross hair drawing signal
+wire on_cursor
+
 // ==========================================================
 // --- CONFIGURATION
 // ==========================================================
@@ -121,7 +124,8 @@ bulletManager #(
   .curr_y(curr_y),
   .ship_x(ship_x),
   .ship_y(ship_y),
-  .on_bullet(on_bullet)
+  .on_bullet(on_bullet),
+  .on_cursor(on_cursor)
 );
 
 
@@ -221,7 +225,8 @@ drawcon drawcon_inst(
     .ship_x(ship_x), .ship_y(ship_y),
     .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
     .curr_x(curr_x), .curr_y(curr_y),
-    .on_bullet(on_bullet)
+    .on_bullet(on_bullet),
+    .on_cursor(on_cursor)
     );
     // Instantiate VGA Module
 vga vga_inst(
