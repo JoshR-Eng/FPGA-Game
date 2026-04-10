@@ -70,8 +70,8 @@ module bulletManager #(
 // ==========================================================
 
 // Bullets Position
-reg [10:0] bullet_x       [0:MAX_BULLETS-1];
-reg [10:0] bullet_y       [0:MAX_BULLETS-1];
+reg signed [10:0] bullet_x       [0:MAX_BULLETS-1];
+reg signed [10:0] bullet_y       [0:MAX_BULLETS-1];
 
 // Bullet Velocity
 reg signed [3:0] vel_x    [0:MAX_BULLETS-1];
@@ -153,10 +153,10 @@ always @(posedge clk) begin
     for (j=0; j<MAX_BULLETS; j=j+1) begin
       if (bullet_active[j]) begin
         // Deactivate if out of bounds
-        if (bullet_x[j] + vel_x[j] > SCREEN_X_MAX) || 
-           (bullet_x[j] + vel_x[j] < SCREEN_X_MIN) ||
-           (bullet_y[j] + vel_y[j] > SCREEN_Y_MAX) || 
-           (bullet_y[j] + vel_y[j] < SCREEN_Y_MIN) )
+        if ((bullet_x[j] + vel_x[j] > SCREEN_X_MAX) || 
+           ( bullet_x[j] + vel_x[j] < SCREEN_X_MIN) ||
+           ( bullet_y[j] + vel_y[j] > SCREEN_Y_MAX) || 
+           ( bullet_y[j] + vel_y[j] < SCREEN_Y_MIN) )
             bullet_active[j] <= 1'b0;
         else begin
             bullet_x[j] <= bullet_x[j] + vel_x[j];
@@ -228,8 +228,8 @@ end
 // ==========================================================
 
 // 1. Determine distance between cursor and ship
-wire signed [11:0] raw_dx = {1'b0, cursor_x} - {1'b0, (ship_x + SHIP_WIDTH/2)}
-wire signed [11:0] raw_dy = {1'b0, cursor_y} - {1'b0, (ship_y + SHIP_WIDTH/2)}
+wire signed [11:0] raw_dx = {1'b0, cursor_x} - {1'b0, (ship_x + SHIP_WIDTH/2)};
+wire signed [11:0] raw_dy = {1'b0, cursor_y} - {1'b0, (ship_y + SHIP_HEIGHT/2)};
 
 // 2. Get absolute value from signed value
 wire [11:0] abs_dx = raw_dx[11] ? {~raw_dx + 12'd1} : raw_dx;
@@ -246,14 +246,14 @@ wire [11:0] dominant = (abs_dx >= abs_dy) ? abs_dx : abs_dy;
 //      suitable power of 2 to shift by
 reg [3:0] shift_n;
 always @* begin
-  if      (dominant >= 10'd512) shift_n = 7;
-  else if (dominant >= 10'd256) shift_n = 6;
-  else if (dominant >= 10'd128) shift_n = 5;
-  else if (dominant >= 10'd64)  shift_n = 4;
-  else if (dominant >= 10'd32)  shift_n = 3;
-  else if (dominant >= 10'd16)  shift_n = 2;
-  else if (dominant >= 10'd8)   shift_n = 1;
-  else                          shift_n = 0;
+  if      (dominant >= 10'd512) shift_n = 4'd8;
+  else if (dominant >= 10'd256) shift_n = 4'd7;
+  else if (dominant >= 10'd128) shift_n = 4'd6;
+  else if (dominant >= 10'd64)  shift_n = 4'd5;
+  else if (dominant >= 10'd32)  shift_n = 4'd4;
+  else if (dominant >= 10'd16)  shift_n = 4'd3;
+  else if (dominant >= 10'd8)   shift_n = 4'd2;
+  else                          shift_n = 4'd1;
 end
 
 // 5. Scale velocities
