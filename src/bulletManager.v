@@ -70,8 +70,8 @@ module bulletManager #(
 // ==========================================================
 
 // Bullets Position
-reg signed [10:0] bullet_x       [0:MAX_BULLETS-1];
-reg signed [10:0] bullet_y       [0:MAX_BULLETS-1];
+reg [10:0] bullet_x       [0:MAX_BULLETS-1];
+reg [10:0] bullet_y       [0:MAX_BULLETS-1];
 
 // Bullet Velocity
 reg signed [3:0] vel_x    [0:MAX_BULLETS-1];
@@ -159,8 +159,8 @@ always @(posedge clk) begin
            ( bullet_y[j] + vel_y[j] < SCREEN_Y_MIN) )
             bullet_active[j] <= 1'b0;
         else begin
-            bullet_x[j] <= bullet_x[j] + vel_x[j];
-            bullet_y[j] <= bullet_y[j] + vel_y[j];
+            bullet_x[j] <= $unsiged($signed({1'b0, bullet_x[j]}) + vel_x[j]);
+            bullet_y[j] <= $unsiged($signed({1'b0, bullet_y[j]}) + vel_y[j]);
         end
       end
     end
@@ -253,7 +253,7 @@ always @* begin
   else if (dominant >= 10'd32)  shift_n = 4'd4;
   else if (dominant >= 10'd16)  shift_n = 4'd3;
   else if (dominant >= 10'd8)   shift_n = 4'd2;
-  else                          shift_n = 4'd1;
+  else                          shift_n = 4'd0;
 end
 
 // 5. Scale velocities
