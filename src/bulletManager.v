@@ -153,10 +153,10 @@ always @(posedge clk) begin
     for (j=0; j<MAX_BULLETS; j=j+1) begin
       if (bullet_active[j]) begin
         // Deactivate if out of bounds
-        if ((bullet_x[j] + vel_x[j] > SCREEN_X_MAX) || 
-           ( bullet_x[j] + vel_x[j] < SCREEN_X_MIN) ||
-           ( bullet_y[j] + vel_y[j] > SCREEN_Y_MAX) || 
-           ( bullet_y[j] + vel_y[j] < SCREEN_Y_MIN) )
+        if (($signed({1'b0, bullet_x[j]}) + vel_x[j] > $signed({1'b0, SCREEN_X_MAX})) ||
+            ($signed({1'b0, bullet_x[j]}) + vel_x[j] < $signed({1'b0, SCREEN_X_MIN})) ||
+            ($signed({1'b0, bullet_y[j]}) + vel_y[j] > $signed({1'b0, SCREEN_Y_MAX})) ||
+            ($signed({1'b0, bullet_y[j]}) + vel_y[j] < $signed({1'b0, SCREEN_Y_MIN})) )
             bullet_active[j] <= 1'b0;
         else begin
             bullet_x[j] <= $unsigned($signed({1'b0, bullet_x[j]}) + vel_x[j]);
