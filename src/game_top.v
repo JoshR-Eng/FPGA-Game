@@ -111,7 +111,9 @@ shipMovement #(
 // Bullet Manager
 bulletManager #(
   .SCREEN_X_MAX(SCREEN_X_MAX),
+  .SCREEN_Y_MIN(SCREEN_X_MIN),
   .SCREEN_Y_MAX(SCREEN_Y_MAX),
+  .SCREEN_Y_MIN(SCREEN_Y_MIN),
   .SHIP_WIDTH(SHIP_WIDTH),
   .SHIP_HEIGHT(SHIP_HEIGHT)
   ) bullet_inst (

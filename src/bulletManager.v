@@ -31,7 +31,9 @@ module bulletManager #(
   parameter BULLET_HEIGHT       = 4'd10,
       // Screen Size
   parameter SCREEN_X_MAX        = 11'd1430,
+  parameter SCREEN_X_MIN        = 11'd10,
   parameter SCREEN_Y_MAX        = 11'd890,
+  parameter SCREEN_Y_MIN        = 11'd10,
       // Ship Size
   parameter SHIP_WIDTH          = 11'd100,
   parameter SHIP_HEIGHT         = 11'd100,
@@ -208,6 +210,7 @@ always @(posedge clk) begin
       cursor_y <= cursor_y + CURSOR_SPEED;
   else if (btn[4])
       cursor_y <= SCREEN_Y_MAX - CURSOR_ARM;
+  end
 end
 
 // ==========================================================
