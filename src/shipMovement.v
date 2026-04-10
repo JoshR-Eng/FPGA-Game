@@ -56,18 +56,11 @@ module shipMovement #(
 // --- Internal Signals 
 // ==========================================================
 
-  // Extract tilt info from accelerometer data
-  // Data Format: [14:10]=X-axis, [9:5]=Y-axis, [4:0]=Z-axis
-  // Each axis: [4]=sign, [3:0]=magnitude
-  wire x_sign, y_sign;
-  wire [3:0] x_data, y_data;
 
   // Position reg
   reg [10:0] ship_x_reg;
   reg [10:0] ship_y_reg;
   
-  wire [3:0] vel_x = tilt_to_vel(x_data);
-  wire [3:0] vel_y = tilt_to_vel(y_data);
   
   // Consider Ship size
   localparam X_MAX_EFF = X_MAX - SHIP_WIDTH + 1;
@@ -83,10 +76,20 @@ module shipMovement #(
 //    Accel X-axis => Screen Y-axis (up/down)
 //    Accel Y-axis => Screen X-axis (left/right)
 
-  assign x_sign = acl_data[14];     // X-axis sign bit
-  assign x_data  = acl_data[13:10];  // X-axis magnitude (4 bits)
-  assign y_sign = acl_data[9];      // Y-axis sign bit  
-  assign y_data  = acl_data[8:5];    // Y-axis magnitude (4 bits)
+wire signed [4:0] acl_x = acl_data[14:0]; // maps to screen Y (90 rotation)
+wire signed [4:0] acl_y = acl_data[9:5];  // maps to screen X
+
+// --- Turn two-complement into sign-magnitude format
+//      X-axis
+wire x_neg = acl_x[4];
+wire [3:0] x_mag = x_neg ? (~acl_x[3:0] + 1'b1) : axl_x[3:0];
+
+wire y_neg = acl_y[4];
+wire [3:0] y_mag = y_neg ? (~acl_y[3:0] + 1'b1) : axl_y[3:0];
+
+// --- Feed mag into tilt_to_vel function
+wire [3:0] vel_x = tilt_to_vel(y_mag);
+wire [3:0] vel_y = tilt_to_vel(x_mag);
 
 
 // ==========================================================
@@ -118,7 +121,7 @@ always@(posedge clk) begin
 
     
     // --- UP       /\
-    if (x_sign) begin
+    if (x_neg) begin
         if ( (ship_y_reg + vel_y) < Y_MAX_EFF)
             ship_y_reg <= ship_y_reg + vel_y; 
         else
@@ -126,7 +129,7 @@ always@(posedge clk) begin
     end
     
     // DOWN         \/
-    if (!x_sign) begin
+    if (!x_neg) begin
         if ( ship_y_reg >  (Y_MIN + vel_y) )
             ship_y_reg <= ship_y_reg - vel_y;
         else
@@ -134,7 +137,7 @@ always@(posedge clk) begin
     end
     
     // --- LEFT     <-
-    if (!y_sign) begin 
+    if (!y_neg) begin 
         if ( ship_x_reg > (X_MIN + vel_x) )
             ship_x_reg <= ship_x_reg - vel_x; 
         else
@@ -142,7 +145,7 @@ always@(posedge clk) begin
     end
     
     // RIGHT        ->
-    if (y_sign) begin
+    if (y_neg) begin
         if ( (ship_x_reg + vel_x) < X_MAX_EFF)
             ship_x_reg <= ship_x_reg + vel_x;
         else
