@@ -34,7 +34,11 @@ module bulletManager #(
   parameter SCREEN_Y_MAX        = 11'd890,
       // Ship Size
   parameter SHIP_WIDTH          = 11'd100,
-  parameter SHIP_HEIGHT         = 11'd100
+  parameter SHIP_HEIGHT         = 11'd100,
+      // Crosshair
+  parameter CURSOR_ARM          = 8,   // Half-length of each bar
+  parameter CURSOR_THICK        = 1, // Half-width of each bar
+  parameter CURSOR_SPEED        = 10
   )(
   // System
   input clk,
@@ -52,7 +56,7 @@ module bulletManager #(
   input [10:0] ship_x, ship_y,
 
   // Boolean if curr_x/y is on bullet pos
-  output reg on_bullet
+  output reg on_bullet,
 
   // Boolean if curr_x/y is on cursor
   output on_cursor
@@ -162,10 +166,7 @@ end
 // for now I will control direction with the buttons
 // but eventually I want to use the mouse for this
 
-parameter CURSOR_ARM = 8;   // Half-length of each bar
-parameter CURSOR_THICK = 1; // Half-width of each bar
 
-parameter CURSOR_SPEED = 10;
 
 assign on_cursor = (
   // Horizontal bar
@@ -178,29 +179,36 @@ assign on_cursor = (
   );
 
 // Crosshair movement
-// Left
-if (btn[2] && cursor_x > (X_MIN + CURSOR_ARM + CURSOR_SPEED))
-    cursor_x <= cursor_x - CURSOR_SPEED;
-else if (btn[2])
-    cursor_x <= X_MIN + CURSOR_ARM;
+always @(posedge clk) begin
+  if (!rst) begin
+    cursor_x <= 11'd720;
+    cursor_y <= 11'd440;
+  end else if (frame_tick) begin
 
-// Right
-if (btn[3] && cursor_x < (X_MAX - CURSOR_ARM - CURSOR_SPEED))
-    cursor_x <= cursor_x + CURSOR_SPEED;
-else if (btn[3])
-    cursor_x <= X_MAX - CURSOR_ARM;
+  // Left
+  if (btn[2] && cursor_x > (SCREEN_X_MIN + CURSOR_ARM + CURSOR_SPEED))
+      cursor_x <= cursor_x - CURSOR_SPEED;
+  else if (btn[2])
+      cursor_x <= SCREEN_X_MIN + CURSOR_ARM;
 
-// Up  (y decreases going up on screen)
-if (btn[1] && cursor_y > (Y_MIN + CURSOR_ARM + CURSOR_SPEED))
-    cursor_y <= cursor_y - CURSOR_SPEED;
-else if (btn[1])
-    cursor_y <= Y_MIN + CURSOR_ARM;
+  // Right
+  if (btn[3] && cursor_x < (SCREEN_X_MAX - CURSOR_ARM - CURSOR_SPEED))
+      cursor_x <= cursor_x + CURSOR_SPEED;
+  else if (btn[3])
+      cursor_x <= SCREEN_X_MAX - CURSOR_ARM;
 
-// Down
-if (btn[4] && cursor_y < (Y_MAX - CURSOR_ARM - CURSOR_SPEED))
-    cursor_y <= cursor_y + CURSOR_SPEED;
-else if (btn[4])
-    cursor_y <= Y_MAX - CURSOR_ARM;
+  // Up  (y decreases going up on screen)
+  if (btn[1] && cursor_y > (SCREEN_Y_MIN + CURSOR_ARM + CURSOR_SPEED))
+      cursor_y <= cursor_y - CURSOR_SPEED;
+  else if (btn[1])
+      cursor_y <= SCREEN_Y_MIN + CURSOR_ARM;
+
+  // Down
+  if (btn[4] && cursor_y < (SCREEN_Y_MAX - CURSOR_ARM - CURSOR_SPEED))
+      cursor_y <= cursor_y + CURSOR_SPEED;
+  else if (btn[4])
+      cursor_y <= SCREEN_Y_MAX - CURSOR_ARM;
+end
 
 // ==========================================================
 // --- Drawing Bullet

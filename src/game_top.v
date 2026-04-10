@@ -60,7 +60,7 @@ wire [14:0] acl_data;
 wire on_bullet;
 
 // Cross hair drawing signal
-wire on_cursor
+wire on_cursor;
 
 // ==========================================================
 // --- CONFIGURATION
