@@ -159,8 +159,8 @@ always @(posedge clk) begin
            ( bullet_y[j] + vel_y[j] < SCREEN_Y_MIN) )
             bullet_active[j] <= 1'b0;
         else begin
-            bullet_x[j] <= $unsiged($signed({1'b0, bullet_x[j]}) + vel_x[j]);
-            bullet_y[j] <= $unsiged($signed({1'b0, bullet_y[j]}) + vel_y[j]);
+            bullet_x[j] <= $unsigned($signed({1'b0, bullet_x[j]}) + vel_x[j]);
+            bullet_y[j] <= $unsigned($signed({1'b0, bullet_y[j]}) + vel_y[j]);
         end
       end
     end
