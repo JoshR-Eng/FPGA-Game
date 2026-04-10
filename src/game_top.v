@@ -78,7 +78,7 @@ localparam SHIP_WIDTH   = 11'd100;
 localparam SHIP_HEIGHT  = 11'd100;
 
   // Accelerometer Deadzone
-localparam DEADZONE = 4'd4;
+localparam DEADZONE = 4'd8;
 
 
 // ==========================================================
@@ -108,7 +108,7 @@ shipMovement #(
 // Bullet Manager
 bulletManager #(
   .SCREEN_X_MAX(SCREEN_X_MAX),
-  .SCREEN_Y_MAX(SCREEN_Y_MAX)
+  .SCREEN_Y_MAX(SCREEN_Y_MAX),
   .SHIP_WIDTH(SHIP_WIDTH),
   .SHIP_HEIGHT(SHIP_HEIGHT)
   ) bullet_inst (

@@ -35,7 +35,7 @@ module shipMovement #(
   parameter SHIP_HEIGHT = 11'd100,
   
   // Movement deadzone
-  parameter DEADZONE = 4'd2
+  parameter DEADZONE = 4'd8
   )(
   // System
   input clk,
@@ -96,8 +96,8 @@ function automatic [3:0] tilt_to_vel;
     input [3:0] magnitude;
     begin
         if      (magnitude > 4'd14)          tilt_to_vel = 4'd4;
-        else if (magnitude > 4'd10)          tilt_to_vel = 4'd3;
-        else if (magnitude > 4'd6)           tilt_to_vel = 4'd2;
+        else if (magnitude > 4'd12)          tilt_to_vel = 4'd3;
+        else if (magnitude > 4'd10)           tilt_to_vel = 4'd2;
         else if (magnitude > DEADZONE)       tilt_to_vel = 4'd1;
         else                                 tilt_to_vel = 4'd0;
     end
