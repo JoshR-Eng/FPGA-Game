@@ -168,7 +168,7 @@ end
 // for now I will control direction with the buttons
 // but eventually I want to use the mouse for this
 
-reg [11:0] cursor_x, cursor_y;
+reg [10:0] cursor_x, cursor_y;
 
 assign on_cursor = (
   // Horizontal bar
@@ -181,35 +181,33 @@ assign on_cursor = (
   );
 
 // Crosshair movement
+// Crosshair movement
 always @(posedge clk) begin
   if (!rst) begin
     cursor_x <= 11'd720;
     cursor_y <= 11'd440;
   end else if (frame_tick) begin
 
-  // Left
-  if (btn[2] && cursor_x > (SCREEN_X_MIN + CURSOR_ARM + CURSOR_SPEED))
-      cursor_x <= cursor_x - CURSOR_SPEED;
-  else if (btn[2])
-      cursor_x <= SCREEN_X_MIN + CURSOR_ARM;
+    // X axis 
+    if      (btn[2] && cursor_x > (SCREEN_X_MIN + CURSOR_ARM + CURSOR_SPEED))
+        cursor_x <= cursor_x - CURSOR_SPEED;
+    else if (btn[2])
+        cursor_x <= SCREEN_X_MIN + CURSOR_ARM;    // clamp — guarantees cursor_x >= CURSOR_ARM
+    else if (btn[3] && cursor_x < (SCREEN_X_MAX - CURSOR_ARM - CURSOR_SPEED))
+        cursor_x <= cursor_x + CURSOR_SPEED;
+    else if (btn[3])
+        cursor_x <= SCREEN_X_MAX - CURSOR_ARM;
 
-  // Right
-  if (btn[3] && cursor_x < (SCREEN_X_MAX - CURSOR_ARM - CURSOR_SPEED))
-      cursor_x <= cursor_x + CURSOR_SPEED;
-  else if (btn[3])
-      cursor_x <= SCREEN_X_MAX - CURSOR_ARM;
+    // Y axis 
+    if      (btn[1] && cursor_y > (SCREEN_Y_MIN + CURSOR_ARM + CURSOR_SPEED))
+        cursor_y <= cursor_y - CURSOR_SPEED;
+    else if (btn[1])
+        cursor_y <= SCREEN_Y_MIN + CURSOR_ARM;    // clamp — guarantees cursor_y >= CURSOR_ARM
+    else if (btn[4] && cursor_y < (SCREEN_Y_MAX - CURSOR_ARM - CURSOR_SPEED))
+        cursor_y <= cursor_y + CURSOR_SPEED;
+    else if (btn[4])
+        cursor_y <= SCREEN_Y_MAX - CURSOR_ARM;
 
-  // Up  (y decreases going up on screen)
-  if (btn[1] && cursor_y > (SCREEN_Y_MIN + CURSOR_ARM + CURSOR_SPEED))
-      cursor_y <= cursor_y - CURSOR_SPEED;
-  else if (btn[1])
-      cursor_y <= SCREEN_Y_MIN + CURSOR_ARM;
-
-  // Down
-  if (btn[4] && cursor_y < (SCREEN_Y_MAX - CURSOR_ARM - CURSOR_SPEED))
-      cursor_y <= cursor_y + CURSOR_SPEED;
-  else if (btn[4])
-      cursor_y <= SCREEN_Y_MAX - CURSOR_ARM;
   end
 end
 
