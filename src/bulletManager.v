@@ -168,7 +168,7 @@ end
 // for now I will control direction with the buttons
 // but eventually I want to use the mouse for this
 
-
+reg [11:0] cursor_x, cursor_y;
 
 assign on_cursor = (
   // Horizontal bar
