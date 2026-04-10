@@ -31,7 +31,10 @@ module bulletManager #(
   parameter BULLET_HEIGHT       = 4'd10,
       // Screen Size
   parameter SCREEN_X_MAX        = 11'd1430,
-  parameter SCREEN_Y_MAX        = 11'd890
+  parameter SCREEN_Y_MAX        = 11'd890,
+      // Ship Size
+  parameter SHIP_WIDTH          = 11'd100,
+  parameter SHIP_HEIGHT         = 11'd100
   )(
   // System
   input clk,
@@ -114,8 +117,8 @@ always @(posedge clk) begin
     for (j=0; j<MAX_BULLETS; j=j+1) begin
       if (!bullet_active[j] && !spawned) begin
         // Spawn bullet at ship loc
-        bullet_x[j] <= ship_x;
-        bullet_y[j] <= ship_y;
+        bullet_x[j] <= ship_x + (SHIP_WIDTH / 2);
+        bullet_y[j] <= ship_y + (SHIP_HEIGHT / 2);
         // Toggle bullet as active 
         bullet_active[j]  <= 1'b1;
         spawned = 1'b1;
