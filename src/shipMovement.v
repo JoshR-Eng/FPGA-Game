@@ -118,42 +118,22 @@ always@(posedge clk) begin
     ship_y_reg <= START_Y;
     end else if (frame_tick) begin
     
+    // Y axis (controlled by acl_x)
+    if (x_neg && vel_y > 0) begin
+        ship_y_reg <= (ship_y_reg + vel_y < Y_MAX_EFF) ? ship_y_reg + vel_y : Y_MAX_EFF;
+    end else if (!x_neg && vel_y > 0) begin
+        ship_y_reg <= (ship_y_reg > Y_MIN + vel_y) ? ship_y_reg - vel_y : Y_MIN;
+    end
 
-    
-    // --- UP       /\
-    if (x_neg) begin
-        if ( (ship_y_reg + vel_y) < Y_MAX_EFF)
-            ship_y_reg <= ship_y_reg + vel_y; 
-        else
-            ship_y_reg <= Y_MAX_EFF;
+    // X axis (controlled by acl_y)
+    if (y_neg && vel_x > 0) begin
+        ship_x_reg <= (ship_x_reg + vel_x < X_MAX_EFF) ? ship_x_reg + vel_x : X_MAX_EFF;
+    end else if (!y_neg && vel_x > 0) begin
+        ship_x_reg <= (ship_x_reg > X_MIN + vel_x) ? ship_x_reg - vel_x : X_MIN;
     end
+   
     
-    // DOWN         \/
-    if (!x_neg) begin
-        if ( ship_y_reg >  (Y_MIN + vel_y) )
-            ship_y_reg <= ship_y_reg - vel_y;
-        else
-            ship_y_reg <= Y_MIN;
     end
-    
-    // --- LEFT     <-
-    if (!y_neg) begin 
-        if ( ship_x_reg > (X_MIN + vel_x) )
-            ship_x_reg <= ship_x_reg - vel_x; 
-        else
-            ship_x_reg <= X_MIN;
-    end
-    
-    // RIGHT        ->
-    if (y_neg) begin
-        if ( (ship_x_reg + vel_x) < X_MAX_EFF)
-            ship_x_reg <= ship_x_reg + vel_x;
-        else
-            ship_x_reg <= X_MAX_EFF;
-    end
-    
-    
- end
  end
 
 // ==========================================================
