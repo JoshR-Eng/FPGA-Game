@@ -76,16 +76,16 @@ module shipMovement #(
 //    Accel X-axis => Screen Y-axis (up/down)
 //    Accel Y-axis => Screen X-axis (left/right)
 
-wire signed [4:0] acl_x = acl_data[14:0]; // maps to screen Y (90 rotation)
+wire signed [4:0] acl_x = acl_data[14:10]; // maps to screen Y (90 rotation)
 wire signed [4:0] acl_y = acl_data[9:5];  // maps to screen X
 
 // --- Turn two-complement into sign-magnitude format
 //      X-axis
 wire x_neg = acl_x[4];
-wire [3:0] x_mag = x_neg ? (~acl_x[3:0] + 1'b1) : axl_x[3:0];
+wire [3:0] x_mag = x_neg ? (~acl_x[3:0] + 1'b1) : acl_x[3:0];
 
 wire y_neg = acl_y[4];
-wire [3:0] y_mag = y_neg ? (~acl_y[3:0] + 1'b1) : axl_y[3:0];
+wire [3:0] y_mag = y_neg ? (~acl_y[3:0] + 1'b1) : acl_y[3:0];
 
 // --- Feed mag into tilt_to_vel function
 wire [3:0] vel_x = tilt_to_vel(y_mag);
