@@ -42,26 +42,24 @@ module bulletManager #(
   parameter CURSOR_THICK        = 1, // Half-width of each bar
   parameter CURSOR_SPEED        = 10
   )(
-  // System
+    // System
   input clk,
   input rst,
   input frame_tick,
-
-  // Mouse Input
+    // Mouse Input
   input fire_trigger,
   input [4:0] btn, // Temporary use of buttons before mouse
-
-  // Drawing Position
+    // Drawing Position
   input [10:0] curr_x, curr_y,
-
-  // Ship Position
+    // Ship Position
   input [10:0] ship_x, ship_y,
-
-  // Boolean if curr_x/y is on bullet pos
+    // Boolean if curr_x/y is on bullet or cursor
   output reg on_bullet,
-
-  // Boolean if curr_x/y is on cursor
   output on_cursor
+    // Bullet Position & State
+  output [175:0] bul_x_packed;
+  output [175:0] bul_y_packed;
+  output [15:0] bul_active_packed;
   );
 
 
@@ -167,7 +165,15 @@ always @(posedge clk) begin
   end
 end
 
-
+// --- Flatten Arrays so it can be passed outside the module
+genvar k;
+generate
+  for (k=0; k< MAX_BULLETS; k=k+1 ) begin : pack_bullets
+    assign bul_x_packed[ (11*k) -: 11] = bullet_x[k];
+    assign bul_y_packed[ (11*k) -: 11] = bullet_y[k];
+    assign bul_active_packed[k]        = bullet_active[k];
+  end
+endgenerate
 
 
 // ==========================================================

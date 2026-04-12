@@ -62,6 +62,11 @@ wire on_bullet;
 // Cross hair drawing signal
 wire on_cursor;
 
+// Bullet Position & State
+wire [175:0] bul_x_packed;
+wire [175:0] bul_y_packed;
+wire [15:0] bul_active_packed;
+
 // ==========================================================
 // --- CONFIGURATION
 // ==========================================================
@@ -127,7 +132,10 @@ bulletManager #(
   .ship_x(ship_x),
   .ship_y(ship_y),
   .on_bullet(on_bullet),
-  .on_cursor(on_cursor)
+  .on_cursor(on_cursor),
+  .bul_x_packed(bul_x_packed),
+  .bul_y_packed(bul_y_packed),
+  .bul_active_packed(bul_active_packed)
 );
 
 
