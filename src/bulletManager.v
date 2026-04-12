@@ -197,7 +197,6 @@ assign on_cursor = (
   );
 
 // Crosshair movement
-// Crosshair movement
 always @(posedge clk) begin
   if (!rst) begin
     cursor_x <= 11'd720;
@@ -209,7 +208,7 @@ always @(posedge clk) begin
         cursor_x <= cursor_x - CURSOR_SPEED;
     else if (btn[2])
         cursor_x <= SCREEN_X_MIN + CURSOR_ARM;    // clamp — guarantees cursor_x >= CURSOR_ARM
-    else if (btn[3] && (cursor_x + CURSOR_ARM + CURSOR_SPEED) < SCREEN_X_MAX)
+    else if (btn[3] && (cursor_x + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_X_MAX)
         cursor_x <= cursor_x + CURSOR_SPEED;
     else if (btn[3])
         cursor_x <= SCREEN_X_MAX - CURSOR_ARM;
@@ -219,7 +218,7 @@ always @(posedge clk) begin
         cursor_y <= cursor_y - CURSOR_SPEED;
     else if (btn[1])
         cursor_y <= SCREEN_Y_MIN + CURSOR_ARM;    // clamp — guarantees cursor_y >= CURSOR_ARM
-    else if (btn[4] && (cursor_y + CURSOR_ARM + CURSOR_SPEED) < SCREEN_Y_MAX )
+    else if (btn[4] && (cursor_y + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_Y_MAX )
         cursor_y <= cursor_y + CURSOR_SPEED;
     else if (btn[4])
         cursor_y <= SCREEN_Y_MAX - CURSOR_ARM;
