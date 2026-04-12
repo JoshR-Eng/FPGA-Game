@@ -79,7 +79,7 @@ reg signed [3:0] vel_y    [0:MAX_BULLETS-1];
 
 // Bullet Spawning
 reg        bullet_active  [0:MAX_BULLETS-1];
-reg        spawned;
+wire       spawned = 1'b0;
 
 // Bullet Heating
 reg [7:0]  gun_heat_reg;  // Current heat level
