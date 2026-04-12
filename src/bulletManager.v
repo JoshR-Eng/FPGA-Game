@@ -169,9 +169,9 @@ end
 genvar k;
 generate
   for (k=0; k< MAX_BULLETS; k=k+1 ) begin : pack_bullets
-    assign bul_x_packed[ (11*k) -: 11] = bullet_x[k];
-    assign bul_y_packed[ (11*k) -: 11] = bullet_y[k];
-    assign bul_active_packed[k]        = bullet_active[k];
+    assign bul_x_packed[ (11*k)+10 -: 11] = bullet_x[k];
+    assign bul_y_packed[ (11*k)+10 -: 11] = bullet_y[k];
+    assign bul_active_packed[k]           = bullet_active[k];
   end
 endgenerate
 
