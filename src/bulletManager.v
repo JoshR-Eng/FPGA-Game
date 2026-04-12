@@ -55,11 +55,11 @@ module bulletManager #(
   input [10:0] ship_x, ship_y,
     // Boolean if curr_x/y is on bullet or cursor
   output reg on_bullet,
-  output on_cursor
+  output on_cursor,
     // Bullet Position & State
-  output [175:0] bul_x_packed;
-  output [175:0] bul_y_packed;
-  output [15:0] bul_active_packed;
+  output [175:0] bul_x_packed,
+  output [175:0] bul_y_packed,
+  output [15:0] bul_active_packed
   );
 
 
