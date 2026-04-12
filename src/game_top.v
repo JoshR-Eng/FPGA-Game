@@ -67,10 +67,10 @@ wire on_cursor;
 // ==========================================================
 
   // Screen Size
-localparam SCREEN_X_MIN = 11'd10;
-localparam SCREEN_X_MAX = 11'd1430;
-localparam SCREEN_Y_MIN = 11'd10;
-localparam SCREEN_Y_MAX = 11'd890;
+localparam SCREEN_X_MIN = 11'd0;
+localparam SCREEN_X_MAX = 11'd1440;
+localparam SCREEN_Y_MIN = 11'd100;
+localparam SCREEN_Y_MAX = 11'd900;
 
   // Ship Starting Position
 localparam SHIP_START_X = 11'd720;
