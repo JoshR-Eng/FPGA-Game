@@ -25,13 +25,20 @@ module asteroidManager#(
   parameter SCREEN_X_MIN  = 11'd0,
   parameter SCREEN_X_MAX  = 11'd1440,
   parameter SCREEN_Y_MIN  = 11'd100,
-  parameter SCREEN_Y_MAX  = 11'd900
+  parameter SCREEN_Y_MAX  = 11'd900,
+  parameter ASTR_SMALL    = 7'd48,
+  parameter ASTR_MEDIUM   = 7'd48,
+  parameter ASTR_LARGE    = 7'd48
   )(
     // System
   input clk,
   input rst,
   input frame_tick,
 
+    // Display
+  input [10:0] curr_x,
+  input [10:0] curr_y,
+  output       on_asteroid,
     // Difficulty
   input [1:0] difficulty,
 
@@ -39,8 +46,7 @@ module asteroidManager#(
   input  [15:0]   astr_hit,
   output [175:0]  astr_x_packed,
   output [175:0]  astr_y_packed,
-  output [15:0]   astr_active_packed,
-  output          on_asteroid
+  output [15:0]   astr_active_packed
   );
  
 
@@ -129,16 +135,15 @@ reg [9:0] spawn_timer;
 reg       spawn_done; // check spawning flag
 
 // Randomly determine Starting States
-//    for the x & y values, need to pad the values otherwise verilog will
-//    evaluate based on l-hand side [10:0] and 
-wire [10:0] rand_x = (lfsr_reg[10:0] > SCREEN_X_MAX) ? SCREEN_X_MAX : lfsr_reg[10:0];
-wire [10:0] rand_y = (lfsr_reg[10:0] > SCREEN_Y_MAX) ? SCREEN_Y_MAX : lfsr_reg[10:0];
+wire [9:0] rand_bits  = lfsr_reg[15:6];
+wire [10:0] rand_x    = (rand_bits * SCREEN_X_MAX[10:0]) >> 10; 
+wire [10:0] rand_y    = (rand_bits * SCREEN_Y_MAX[10:0]) >> 10; 
 wire [1:0] spawn_edge = lfsr_reg[1:0];                // Spawning Edge
-wire [1:0] spawn_size = lfsr_reg[7:6];                // Spawning Size
+wire [1:0] spawn_size = lfsr_reg[5:4];                // Spawning Size
 
 // Signed drift component: lfsr_reg[4:3] gives 0-3, subtract 1 = range -1 to +2
 // Use only 2 values: lfsr_reg[3] gives 0 or 1, subtract 0 gives gentle drift
-wire signed [3:0] drift = {2'b00, lfsr_reg[4:3]} - 4'sd1;
+wire signed [3:0] drift = {2'b00, lfsr_reg[3:2]} - 4'sd1;
 
 // Loop Counter
 integer   s;
@@ -158,6 +163,7 @@ always @(posedge clk) begin
   end else if (frame_tick) begin
     spawn_done = 1'b0;
     if (spawn_timer == 10'd0) begin
+      spawn_timer <= spawn_interval;
       for (s=0; s<MAX_ASTEROIDS; s=s+1) begin   
         if (!astr_active[s] && !spawn_done) begin
 
@@ -213,15 +219,30 @@ end
 // ==========================================================
 
 integer i;
+reg [6:0] half_size; // max LARGE half-width
+
 always @* begin
-  on_asteroid = 1'b0;
-  for (i=0; i<MAX_ASTEROID; i=i+1) begin
-    if (astr_active[i] &&
-        (curr_x >= astr_x[i]) && (curr_x < astr_x[i]+ASTEROID_WIDTH) &&
-        (curr_y >= astr_y[i]) && (curr_y < astr_y[i]+ASTEROID_HEIGHT))
-        on_asteroid = 1'b1;
-  end
+    on_asteroid = 1'b0;
+    for (i = 0; i < MAX_ASTEROIDS; i = i+1) begin
+
+        // Resolve half-size from 2-bit size field
+        case (astr_size[(2*i)+1 -: 2])
+            2'b10:   half_size = ASTR_LARGE;   // LARGE:  96px
+            2'b01:   half_size = ASTR_MEDIUM;  // MEDIUM: 48px
+            2'b00:   half_size = ASTR_SMALL;   // SMALL:  24px
+            default: half_size = ASTR_SMALL;   // 
+        endcase
+
+        if (astr_active[i] &&
+            curr_x >= astr_x[i] - half_size &&
+            curr_x <  astr_x[i] + half_size &&
+            curr_y >= astr_y[i] - half_size &&
+            curr_y <  astr_y[i] + half_size)
+            on_asteroid = 1'b1;
+    end
 end
+
+
 
 // ==========================================================
 // --- Flatten Arrays 
