@@ -86,7 +86,7 @@ always @(posedge clk) begin
   end else if (frame_tick) begin
     // Shift register left, feed new bit at [0]
     // also, if register becomes 0, need to force non-zero
-    if (lfsr_reg == 16'0000)
+    if (lfsr_reg == 16'h0000)
       lfsr_reg <= 16'd1;
     else
       lfsr_reg <= {lfsr_reg[14:0], lfsr_feedback};
@@ -129,10 +129,12 @@ reg [9:0] spawn_timer;
 reg       spawn_done; // check spawning flag
 
 // Randomly determine Starting States
-wire [10:0] rand_x = (lfsr_reg * SCREEN_X_MAX) >> 16; // Spawning X pos.
-wire [10:0] rand_y = (lfsr_reg * SCREEN_Y_MAX) >> 16; // Spawning Y pos.
+//    for the x & y values, need to pad the values otherwise verilog will
+//    evaluate based on l-hand side [10:0] and 
+wire [10:0] rand_x = (lfsr_reg[10:0] > SCREEN_X_MAX) ? SCREEN_X_MAX : lfsr_reg[10:0];
+wire [10:0] rand_y = (lfsr_reg[10:0] > SCREEN_Y_MAX) ? SCREEN_Y_MAX : lfsr_reg[10:0];
 wire [1:0] spawn_edge = lfsr_reg[1:0];                // Spawning Edge
-wire [1:0] spawn_size = lfsr_reg[2:0];                // Spawning Size
+wire [1:0] spawn_size = lfsr_reg[7:6];                // Spawning Size
 
 // Signed drift component: lfsr_reg[4:3] gives 0-3, subtract 1 = range -1 to +2
 // Use only 2 values: lfsr_reg[3] gives 0 or 1, subtract 0 gives gentle drift
@@ -160,10 +162,9 @@ always @(posedge clk) begin
         if (!astr_active[s] && !spawn_done) begin
 
           // Active Asteroid
-          astr_size[s]    = spawn_size;
-          astr_active[s]  = 1'b1;
-          spawn_timer    <= spawn_interval;
-          spawn_done      = 1'b1;
+          astr_size[s]    <= spawn_size;
+          astr_active[s]  <= 1'b1;
+          spawn_done      <= 1'b1;
 
           case (spawn_edge)
             2'b00:begin    // Top Edge
@@ -187,7 +188,7 @@ always @(posedge clk) begin
                   vel_y[s]  <= drift;
                   end
 
-            2'b11:begin    // Left Edge
+            2'b11:begin    // Right Edge
                   astr_x[s] <= SCREEN_X_MAX;
                   astr_y[s] <= rand_y;
                   vel_x[s]  <= -4'sd2;
@@ -198,11 +199,40 @@ always @(posedge clk) begin
         end
       end
     end else begin
-      spawn_time <= spawn_timer - 1'b1;
+      spawn_timer <= spawn_timer - 1'b1;
     end
   end
 end
 
 
+
+
+
+// ==========================================================
+// --- Drawning Logic 
+// ==========================================================
+
+integer i;
+always @* begin
+  on_asteroid = 1'b0;
+  for (i=0; i<MAX_ASTEROID; i=i+1) begin
+    if (astr_active[i] &&
+        (curr_x >= astr_x[i]) && (curr_x < astr_x[i]+ASTEROID_WIDTH) &&
+        (curr_y >= astr_y[i]) && (curr_y < astr_y[i]+ASTEROID_HEIGHT))
+        on_asteroid = 1'b1;
+  end
+end
+
+// ==========================================================
+// --- Flatten Arrays 
+// ==========================================================
+genvar k;
+generate
+  for (k=0; k< MAX_ASTEROIDS; k=k+1 ) begin : pack_asteroids
+    assign astr_x_packed[ (11*k)+10 -: 11] = astr_x[k];
+    assign astr_y_packed[ (11*k)+10 -: 11] = astr_y[k];
+    assign astr_active_packed[k]           = astr_active[k];
+  end
+endgenerate
 
 endmodule
