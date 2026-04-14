@@ -6,7 +6,7 @@
 // Create Date: 16.02.2026 11:52:08
 // Design Name: 
 // Module Name: asteroidManager
-// Project Name: 
+// Promect Name: 
 // Target Devices: 
 // Tool Versions: 
 // Description: 
@@ -26,8 +26,8 @@ module asteroidManager#(
   parameter SCREEN_X_MAX  = 11'd1440,
   parameter SCREEN_Y_MIN  = 11'd100,
   parameter SCREEN_Y_MAX  = 11'd900,
-  parameter ASTR_SMALL    = 7'd48,
-  parameter ASTR_MEDIUM   = 7'd48,
+  parameter ASTR_SMALL    = 7'd12,
+  parameter ASTR_MEDIUM   = 7'd24,
   parameter ASTR_LARGE    = 7'd48
   )(
     // System
@@ -136,8 +136,10 @@ reg       spawn_done; // check spawning flag
 
 // Randomly determine Starting States
 wire [9:0] rand_bits  = lfsr_reg[15:6];
-wire [10:0] rand_x    = (rand_bits * SCREEN_X_MAX[10:0]) >> 10; 
-wire [10:0] rand_y    = (rand_bits * SCREEN_Y_MAX[10:0]) >> 10; 
+wire [20:0] rand_x_full = {11'b0, rand_bits} * SCREEN_X_MAX;
+wire [10:0] rand_x      = rand_x_full[20:10];   // upper 11 bits after >> 10
+wire [20:0] rand_y_full = {11'b0, rand_bits} * SCREEN_Y_MAX;
+wire [10:0] rand_y      = rand_y_full[20:10];
 wire [1:0] spawn_edge = lfsr_reg[1:0];                // Spawning Edge
 wire [1:0] spawn_size = lfsr_reg[5:4];                // Spawning Size
 
@@ -170,7 +172,7 @@ always @(posedge clk) begin
           // Active Asteroid
           astr_size[s]    <= spawn_size;
           astr_active[s]  <= 1'b1;
-          spawn_done      <= 1'b1;
+          spawn_done       = 1'b1;
 
           case (spawn_edge)
             2'b00:begin    // Top Edge
@@ -212,6 +214,49 @@ end
 
 
 
+// ==========================================================
+// --- Movement 
+// ==========================================================
+
+integer m;
+
+always @(posedge clk) begin
+  if (!rst) begin
+    for (m=0; m<MAX_ASTEROIDS; m=m+1) begin
+      astr_active[m] <= 1'b0;
+      astr_x[m]      <= 11'b0;
+      astr_y[m]      <= 11'b0;
+    end
+  end else if (frame_tick) begin
+    for (m=0; m<MAX_ASTEROIDS; m=m+1) begin
+      if (astr_active[m]) begin
+
+        // Get Asteroid Size
+        case (astr_size[m])
+            2'b10:   half_size = ASTR_LARGE;   // LARGE:  96px
+            2'b01:   half_size = ASTR_MEDIUM;  // MEDIUM: 48px
+            2'b00:   half_size = ASTR_SMALL;   // SMALL:  24px
+            default: half_size = ASTR_SMALL;   // 
+        endcase
+
+        // Deactivate if off screen
+        if (($signed({1'b0, astr_x[m]}) + vel_x[m] > $signed({1'b0, SCREEN_X_MAX})) ||
+            ($signed({1'b0, astr_x[m]}) + vel_x[m] < $signed({1'b0, SCREEN_X_MIN})) ||
+            ($signed({1'b0, astr_y[m]}) + vel_y[m] > $signed({1'b0, SCREEN_Y_MAX})) ||
+            ($signed({1'b0, astr_y[m]}) + vel_y[m] < $signed({1'b0, SCREEN_Y_MIN})) )
+            astr_active[m] <= 1'b0;
+
+        // Move asteroid by velocity vector
+        else begin
+          astr_x[m] <= $unsigned($signed({1'b0, astr_x[m]}) + vel_x[m]);
+          astr_y[m] <= $unsigned($signed({1'b0, astr_y[m]}) + vel_y[m]);
+        end
+        
+      end
+    end
+  end
+end
+
 
 
 // ==========================================================
@@ -221,24 +266,29 @@ end
 integer i;
 reg [6:0] half_size; // max LARGE half-width
 
+reg [10:0] draw_x_min, draw_x_max, draw_y_min, draw_y_min;
+
 always @* begin
     on_asteroid = 1'b0;
     for (i = 0; i < MAX_ASTEROIDS; i = i+1) begin
 
         // Resolve half-size from 2-bit size field
-        case (astr_size[(2*i)+1 -: 2])
+        case (astr_size[i])
             2'b10:   half_size = ASTR_LARGE;   // LARGE:  96px
             2'b01:   half_size = ASTR_MEDIUM;  // MEDIUM: 48px
             2'b00:   half_size = ASTR_SMALL;   // SMALL:  24px
             default: half_size = ASTR_SMALL;   // 
         endcase
 
+        draw_x_min = (astr_x[i] > {4'b0, half_size}) ? astr_x[i] - {4'b0, half_size} : 11'd0;
+        draw_x_max = astr_x[i] + {4'b0, half_size};
+        draw_y_min = (astr_y[i] > {4'b0, half_size}) ? astr_y[i] - {4'b0, half_size} : 11'd0;
+        draw_y_max = astr_y[i] + {4'b0, half_size};
+
         if (astr_active[i] &&
-            curr_x >= astr_x[i] - half_size &&
-            curr_x <  astr_x[i] + half_size &&
-            curr_y >= astr_y[i] - half_size &&
-            curr_y <  astr_y[i] + half_size)
-            on_asteroid = 1'b1;
+            curr_x >= draw_x_min && curr_x < draw_x_max &&
+            curr_y >= draw_y_min && curr_y < draw_y_max)
+            on_asteroid = 1'b1;    
     end
 end
 
