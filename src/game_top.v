@@ -45,6 +45,7 @@ module game_top(
 // Internal Clocks & Timing
 wire pixclk;
 wire frame_tick;
+wire difficulty;
 
 // VGA
 wire [3:0] draw_r, draw_g, draw_b;
@@ -56,16 +57,22 @@ wire [10:0] ship_x, ship_y;
 // Accelerometer data
 wire [14:0] acl_data;
 
-// Bullet drawing signal
+// Drawing signal
 wire on_bullet;
-
-// Cross hair drawing signal
 wire on_cursor;
+wire on_asteroid;
 
 // Bullet Position & State
 wire [175:0] bul_x_packed;
 wire [175:0] bul_y_packed;
 wire [15:0] bul_active_packed;
+
+// Asteroid Position & State
+wire [175:0] astr_x_packed;
+wire [175:0] astr_y_packed;
+wire [15:0] astr_active_packed;
+wire [15:0] astr_hit;
+
 
 // ==========================================================
 // --- CONFIGURATION
@@ -88,6 +95,11 @@ localparam SHIP_HEIGHT  = 11'd100;
   // Accelerometer Deadzone
 localparam DEADZONE = 4'd2;
 
+  // Asteroid config
+localparam MAX_ASTEROIDS = 16;
+localparam ASTR_SMALL    = 7'd12;
+localparam ASTR_MEDIUM   = 7'd24;
+localparam ASTR_LARGE    = 7'd48;
 
 // ==========================================================
 // --- Game Logic Modules
@@ -136,6 +148,30 @@ bulletManager #(
   .bul_x_packed(bul_x_packed),
   .bul_y_packed(bul_y_packed),
   .bul_active_packed(bul_active_packed)
+);
+
+// Asteroid Manager
+asteroidManager #(
+  .MAX_ASTEROIDS(MAX_ASTEROIDS),
+  .SCREEN_X_MIN(SCREEN_X_MIN),
+  .SCREEN_X_MAX(SCREEN_X_MAX),
+  .SCREEN_Y_MIN(SCREEN_Y_MIN),
+  .SCREEN_Y_MAX(SCREEN_Y_MAX),
+  .ASTR_SMALL(ASTR_SMALL),
+  .ASTR_MEDIUM(ASTR_MEDIUM),
+  .ASTR_LARGE(ASTR_LARGE)
+  )asteroid_inst(
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick),
+  .curr_x(curr_x),
+  .curr_y(curr_y),
+  .on_asteroid(on_asteroid),
+  .difficulty(difficulty),
+  .astr_hit(astr_hit),
+  .astr_x_packed(astr_x_packed),
+  .astr_y_packed(astr_y_packed),
+  .astr_active_packed(astr_active_packed)
 );
 
 
@@ -236,7 +272,8 @@ drawcon drawcon_inst(
     .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
     .curr_x(curr_x), .curr_y(curr_y),
     .on_bullet(on_bullet),
-    .on_cursor(on_cursor)
+    .on_cursor(on_cursor),
+    .on_asteroid(on_asteroid)
     );
     // Instantiate VGA Module
 vga vga_inst(

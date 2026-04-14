@@ -23,9 +23,9 @@
 module asteroidManager#(
   parameter MAX_ASTEROIDS = 16,
   parameter SCREEN_X_MIN  = 11'd0,
-  parameter SCREEN_X_MAX  = 11'd1440,
+  parameter SCREEN_X_MAX  = 11'd1439,
   parameter SCREEN_Y_MIN  = 11'd100,
-  parameter SCREEN_Y_MAX  = 11'd900,
+  parameter SCREEN_Y_MAX  = 11'd899,
   parameter ASTR_SMALL    = 7'd12,
   parameter ASTR_MEDIUM   = 7'd24,
   parameter ASTR_LARGE    = 7'd48
@@ -159,8 +159,8 @@ always @(posedge clk) begin
     // reset all asteroid slots to inactive
     for (s=0; s<MAX_ASTEROIDS; s=s+1) begin
       astr_active[s] <= 1'b0;
-      astr_x[m]      <= 11'b0;
-      astr_y[m]      <= 11'b0;
+      astr_x[s]      <= 11'b0;
+      astr_y[s]      <= 11'b0;
     end
 
   // Asteroid spawning logic

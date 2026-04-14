@@ -27,6 +27,7 @@ module drawcon #(
     input clk, rst,
     input on_bullet,
     input on_cursor,
+    input on_asteroid,
     input [10:0] curr_x, curr_y,
     input [10:0] ship_x, ship_y,
     output [3:0] draw_r, draw_g, draw_b
@@ -74,22 +75,29 @@ always @* begin
     mux_r = 4'h0;
     mux_g = 4'h0;
     mux_b = 4'h1;
-    
-    // Layer 1: BULLET (red)
+
+    // Layer 1: ASTEROIDS (grey)
+    if (on_asteroid) begin
+      mux_r = 4'hA;
+      mux_g = 4'hA;
+      mux_b = 4'hA;
+    end
+
+    // Layer 2: BULLET (red)
     if (on_bullet) begin
       mux_r = 4'hF;
       mux_g = 4'h0;
       mux_b = 4'h0;
     end
 
-    // Layer 2: SHIP
+    // Layer 3: SHIP
     if (ship_on && (rom_pixel[11:0] != 12'h000)) begin
         mux_r = rom_pixel[11:8];
         mux_g = rom_pixel[7:4];
         mux_b = rom_pixel[3:0];
     end
     
-    // Layer 3: Crosshair
+    // Layer 4: Crosshair
     if (on_cursor) begin
       mux_r = 4'hF;
       mux_g = 4'hF;
