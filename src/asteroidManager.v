@@ -128,18 +128,20 @@ end
 
 
 // ==========================================================
-// --- Asteroid Spawner FSM
+// --- Random value assignment 
 // ==========================================================
-
 reg [9:0] spawn_timer;
 reg       spawn_done; // check spawning flag
 
 // Randomly determine Starting States
 wire [9:0] rand_bits  = lfsr_reg[15:6];
+
 wire [20:0] rand_x_full = {11'b0, rand_bits} * SCREEN_X_MAX;
 wire [10:0] rand_x      = rand_x_full[20:10];   // upper 11 bits after >> 10
+
 wire [20:0] rand_y_full = {11'b0, rand_bits} * SCREEN_Y_MAX;
 wire [10:0] rand_y      = rand_y_full[20:10];
+
 wire [1:0] spawn_edge = lfsr_reg[1:0];                // Spawning Edge
 wire [1:0] spawn_size = lfsr_reg[5:4];                // Spawning Size
 
@@ -147,8 +149,35 @@ wire [1:0] spawn_size = lfsr_reg[5:4];                // Spawning Size
 // Use only 2 values: lfsr_reg[3] gives 0 or 1, subtract 0 gives gentle drift
 wire signed [3:0] drift = {2'b00, lfsr_reg[3:2]} - 4'sd1;
 
+
+
+
+
+
+
+// ==========================================================
+// --- Asteroid Spawning & Movement 
+// ==========================================================
+/*
+First compute the next position since when it spawns it starts off
+at the edge of the screen. Because of this the deactivation logic
+would force all asteroids to be disabled as they're spawned
+*/
+wire signed [11:0] astr_x_next [0:MAX_ASTEROIDS-1];
+wire signed [11:0] astr_y_next [0:MAX_ASTEROIDS-1];
+genvar n;
+generate
+    for (n=0; n<MAX_ASTEROIDS; n=n+1) begin : next_pos
+        assign astr_x_next[n] = $signed({1'b0, astr_x[n]}) + vel_x[n];
+        assign astr_y_next[n] = $signed({1'b0, astr_y[n]}) + vel_y[n];
+    end
+endgenerate
+
+
+
 // Loop Counter
-integer   s;
+integer s;
+integer m;
 
 
 always @(posedge clk) begin
@@ -163,8 +192,28 @@ always @(posedge clk) begin
       astr_y[s]      <= 11'b0;
     end
 
-  // Asteroid spawning logic
+  // Update every new frame
   end else if (frame_tick) begin
+
+
+    // --- MOVEMENT 
+    for (m=0; m<MAX_ASTEROIDS; m=m+1) begin
+      if (astr_active[m]) begin
+
+        // Deactivate if off screen
+        if ((astr_x_next[m] < -12'sd64)                                 ||
+            (astr_x_next[m] > $signed({1'b0, SCREEN_X_MAX}) + 12'sd64)  ||
+            (astr_y_next[m] < $signed({1'b0, SCREEN_Y_MIN}))            || 
+            (astr_y_next[m] > $signed({1'b0, SCREEN_Y_MAX}) + 12'sd64)  )
+          astr_active[m] <= 1'b0;
+        else begin
+            astr_x[m] <= astr_x_next[m][10:0];
+            astr_y[m] <= astr_y_next[m][10:0];
+        end        
+      end
+    end
+
+    // --- SPAWNING
     spawn_done = 1'b0;
     if (spawn_timer == 10'd0) begin
       spawn_timer <= spawn_interval;
@@ -213,52 +262,6 @@ always @(posedge clk) begin
     end
   end
 end
-
-
-
-// ==========================================================
-// --- Movement 
-// ==========================================================
-
-/*
-First compute the next position since when it spawns it starts off
-at the edge of the screen. Because of this the deactivation logic
-would force all asteroids to be disabled as they're spawned
-*/
-wire signed [11:0] astr_x_next [0:MAX_ASTEROIDS-1];
-wire signed [11:0] astr_y_next [0:MAX_ASTEROIDS-1];
-genvar n;
-generate
-    for (n=0; n<MAX_ASTEROIDS; n=n+1) begin : next_pos
-        assign astr_x_next[n] = $signed({1'b0, astr_x[n]}) + vel_x[n];
-        assign astr_y_next[n] = $signed({1'b0, astr_y[n]}) + vel_y[n];
-    end
-endgenerate
-
-
-
-integer m;
-
-always @(posedge clk) begin
-  if (frame_tick) begin
-    for (m=0; m<MAX_ASTEROIDS; m=m+1) begin
-      if (astr_active[m]) begin
-
-        // Deactivate if off screen
-        if ((astr_x_next[m] < -12'sd64)                                 ||
-            (astr_x_next[m] > $signed({1'b0, SCREEN_X_MAX}) + 12'sd64)  ||
-            (astr_y_next[m] < $signed({1'b0, SCREEN_Y_MIN}))            || 
-            (astr_y_next[m] > $signed({1'b0, SCREEN_Y_MAX}) + 12'sd64)  )
-          astr_active[m] <= 1'b0;
-        else begin
-            astr_x[m] <= astr_x_next[m][10:0];
-            astr_y[m] <= astr_y_next[m][10:0];
-        end        
-      end
-    end
-  end
-end
-
 
 
 // ==========================================================
