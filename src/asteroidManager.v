@@ -38,7 +38,7 @@ module asteroidManager#(
     // Display
   input [10:0] curr_x,
   input [10:0] curr_y,
-  output       on_asteroid,
+  output reg   on_asteroid,
     // Difficulty
   input [1:0] difficulty,
 
