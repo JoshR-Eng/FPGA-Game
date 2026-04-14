@@ -23,7 +23,7 @@
 module drawcon #(
     parameter SHIP_WIDTH = 100,
     parameter SHIP_HEIGHT = 100,
-    parameter SCREEN_Y_MIN
+    parameter SCREEN_Y_MIN = 11'd100
     )(
     input clk, rst,
     input on_bullet,
