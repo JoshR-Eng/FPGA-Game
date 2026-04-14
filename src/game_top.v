@@ -45,7 +45,8 @@ module game_top(
 // Internal Clocks & Timing
 wire pixclk;
 wire frame_tick;
-wire difficulty;
+wire [1:0] difficulty;
+assign difficulty = sw[1:0]
 
 // VGA
 wire [3:0] draw_r, draw_g, draw_b;
@@ -72,6 +73,7 @@ wire [175:0] astr_x_packed;
 wire [175:0] astr_y_packed;
 wire [15:0] astr_active_packed;
 wire [15:0] astr_hit;
+assign astr_hit = 16'b0; // temp. until collision logic made
 
 
 // ==========================================================
@@ -189,60 +191,6 @@ asteroidManager #(
   .clk_in1(clk)
   );
 
-//// --- 60 Hz Game Clock
-//// Game clocok Generation
-//always @(posedge clk) begin
-//    if(!rst) begin
-//        clk_div <= 0;
-//        game_clk <= 0;
-//    end else begin
-//        if(clk_div == 20'hffff ) begin
-//            clk_div <= 0;
-//            game_clk <= !game_clk;
-//        end else begin
-//            clk_div <= clk_div + 1;
-//        end
-//    end
-//end
-
-
-//// ==========================================================
-//// --- Block Movement
-//// ==========================================================
-//always @(posedge pixclk) begin
-//    if (!rst) begin
-//        ship_x <= 11'd720;
-//        ship_y <= 11'd450;
-//    end else if (frame_tick) begin
-//        if (btn[0]) begin
-//            ship_x <= 11'd10;
-//            ship_y <= 11'd10;
-//        end else begin
-//            case(btn[4:1])
-//                4'b0010: begin                          // left
-//                         if(ship_x > 11'd10) begin
-//                            ship_x <= ship_x - 4; 
-//                         end end
-//               4'b0100: begin                          // right
-//                         if(ship_x < 11'd1430 - 11'd100) begin
-//                            ship_x <= ship_x + 4; 
-//                         end end
-//               4'b1000: begin                          // down
-//                        if(ship_y < (11'd890 - 11'd100)) begin
-//                            ship_y <= ship_y + 4; 
-//                         end end
-//               4'b0001: begin                          // up
-//                         if(ship_y > 11'd10 ) begin
-//                            ship_y <= ship_y - 4; 
-//                         end end
-//               default: begin
-//                            ship_x <= ship_x;
-//                            ship_y <= ship_y;
-//                        end
-//            endcase
-//        end
-//    end
-//end
 
 
 // ==========================================================
