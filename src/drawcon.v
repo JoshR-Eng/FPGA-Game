@@ -48,7 +48,7 @@ wire [11:0] rom_pixel;
 
 
 // Object Detection
-wire ship_on;
+reg ship_on;
 reg ship_on_reg;
 wire on_gamebar;
 integer i;
