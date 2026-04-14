@@ -22,7 +22,8 @@
 
 module drawcon #(
     parameter SHIP_WIDTH = 100,
-    parameter SHIP_HEIGHT = 100
+    parameter SHIP_HEIGHT = 100,
+    parameter SCREEN_Y_MIN
     )(
     input clk, rst,
     input on_bullet,
@@ -63,7 +64,7 @@ reg [3:0] mux_b;
 assign ship_on = (curr_x >= ship_x) && ( curr_x < (ship_x + SHIP_WIDTH)) &&
                  (curr_y >= ship_y) && ( curr_y < (ship_y + SHIP_HEIGHT));
 
-
+assign on_gamebar = (curr_y <= SCREEN_Y_MIN)
 
 // ==========================================================
 // --- Draw Priority Multiplexer
@@ -103,6 +104,12 @@ always @* begin
       mux_g = 4'hF;
       mux_b = 4'hF;
     end
+
+    // Layer 5: Gamebar
+    if (on_gamebar) 
+      mux_r = 4'h0;
+      mux_g = 4'h0;
+      mux_b = 4'hF;
 end
 
 

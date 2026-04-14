@@ -214,7 +214,9 @@ accOutput accel_inst (
 // ==========================================================
 
     // Instantiate Drawcon Module
-drawcon drawcon_inst(
+drawcon #(
+  .SCREEN_Y_MIN(SCREEN_Y_MIN)
+) drawcon_inst(
     .clk(pixclk), .rst(rst),
     .ship_x(ship_x), .ship_y(ship_y),
     .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
