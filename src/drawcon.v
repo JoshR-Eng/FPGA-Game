@@ -64,7 +64,7 @@ reg [3:0] mux_b;
 assign ship_on = (curr_x >= ship_x) && ( curr_x < (ship_x + SHIP_WIDTH)) &&
                  (curr_y >= ship_y) && ( curr_y < (ship_y + SHIP_HEIGHT));
 
-assign on_gamebar = (curr_y <= SCREEN_Y_MIN)
+assign on_gamebar = (curr_y <= SCREEN_Y_MIN);
 
 // ==========================================================
 // --- Draw Priority Multiplexer
