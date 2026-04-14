@@ -106,10 +106,11 @@ always @* begin
     end
 
     // Layer 5: Gamebar
-    if (on_gamebar) 
+    if (on_gamebar) begin
       mux_r = 4'h0;
       mux_g = 4'h0;
       mux_b = 4'hF;
+    end
 end
 
 
