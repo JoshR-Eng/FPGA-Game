@@ -49,6 +49,8 @@ wire [11:0] rom_pixel;
 
 // Object Detection
 wire ship_on;
+reg ship_on_reg;
+wire on_gamebar;
 integer i;
 
 // Draw Multiplexer
@@ -61,7 +63,7 @@ reg [3:0] mux_b;
 // ==========================================================
 
 // Check for ship
-assign ship_on = (curr_x >= ship_x) && ( curr_x < (ship_x + SHIP_WIDTH)) &&
+assign ship_on_reg = (curr_x >= ship_x) && ( curr_x < (ship_x + SHIP_WIDTH)) &&
                  (curr_y >= ship_y) && ( curr_y < (ship_y + SHIP_HEIGHT));
 
 assign on_gamebar = (curr_y <= SCREEN_Y_MIN);
@@ -127,6 +129,11 @@ wire [10:0] local_ship_x = curr_x - ship_x;
 wire [10:0] local_ship_y = curr_y - ship_y;
 
 always @(posedge clk) begin
+    // Delay ship_on by one clock to match
+    // BRAM read latency
+    ship_on <= ship_on_reg;
+
+    // Retrieve BRAM address
     if (ship_on) begin
         // Address = (Y * Width) + X
         addr <= (local_ship_y * SHIP_WIDTH) + local_ship_x;
