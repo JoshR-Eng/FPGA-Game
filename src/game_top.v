@@ -46,7 +46,7 @@ module game_top(
 wire pixclk;
 wire frame_tick;
 wire [1:0] difficulty;
-assign difficulty = sw[1:0]
+assign difficulty = sw[1:0];
 
 // VGA
 wire [3:0] draw_r, draw_g, draw_b;
