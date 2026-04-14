@@ -159,6 +159,8 @@ always @(posedge clk) begin
     // reset all asteroid slots to inactive
     for (s=0; s<MAX_ASTEROIDS; s=s+1) begin
       astr_active[s] <= 1'b0;
+      astr_x[m]      <= 11'b0;
+      astr_y[m]      <= 11'b0;
     end
 
   // Asteroid spawning logic
@@ -170,7 +172,7 @@ always @(posedge clk) begin
         if (!astr_active[s] && !spawn_done) begin
 
           // Active Asteroid
-          astr_size[s]    <= spawn_size;
+          astr_size[s]    <= (spawn_size == 2'b11) ? 2'b10 : spawn_size;
           astr_active[s]  <= 1'b1;
           spawn_done       = 1'b1;
 
@@ -218,40 +220,40 @@ end
 // --- Movement 
 // ==========================================================
 
+/*
+First compute the next position since when it spawns it starts off
+at the edge of the screen. Because of this the deactivation logic
+would force all asteroids to be disabled as they're spawned
+*/
+wire signed [11:0] astr_x_next [0:MAX_ASTEROIDS-1];
+wire signed [11:0] astr_y_next [0:MAX_ASTEROIDS-1];
+genvar n;
+generate
+    for (n=0; n<MAX_ASTEROIDS; n=n+1) begin : next_pos
+        assign astr_x_next[n] = $signed({1'b0, astr_x[n]}) + vel_x[n];
+        assign astr_y_next[n] = $signed({1'b0, astr_y[n]}) + vel_y[n];
+    end
+endgenerate
+
+
+
 integer m;
 
 always @(posedge clk) begin
-  if (!rst) begin
-    for (m=0; m<MAX_ASTEROIDS; m=m+1) begin
-      astr_active[m] <= 1'b0;
-      astr_x[m]      <= 11'b0;
-      astr_y[m]      <= 11'b0;
-    end
-  end else if (frame_tick) begin
+  if (frame_tick) begin
     for (m=0; m<MAX_ASTEROIDS; m=m+1) begin
       if (astr_active[m]) begin
 
-        // Get Asteroid Size
-        case (astr_size[m])
-            2'b10:   half_size = ASTR_LARGE;   // LARGE:  96px
-            2'b01:   half_size = ASTR_MEDIUM;  // MEDIUM: 48px
-            2'b00:   half_size = ASTR_SMALL;   // SMALL:  24px
-            default: half_size = ASTR_SMALL;   // 
-        endcase
-
         // Deactivate if off screen
-        if (($signed({1'b0, astr_x[m]}) + vel_x[m] > $signed({1'b0, SCREEN_X_MAX})) ||
-            ($signed({1'b0, astr_x[m]}) + vel_x[m] < $signed({1'b0, SCREEN_X_MIN})) ||
-            ($signed({1'b0, astr_y[m]}) + vel_y[m] > $signed({1'b0, SCREEN_Y_MAX})) ||
-            ($signed({1'b0, astr_y[m]}) + vel_y[m] < $signed({1'b0, SCREEN_Y_MIN})) )
-            astr_active[m] <= 1'b0;
-
-        // Move asteroid by velocity vector
+        if ((astr_x_next[m] < -12'sd64)                                 ||
+            (astr_x_next[m] > $signed({1'b0, SCREEN_X_MAX}) + 12'sd64)  ||
+            (astr_y_next[m] < $signed({1'b0, SCREEN_Y_MIN}))            || 
+            (astr_y_next[m] > $signed({1'b0, SCREEN_Y_MAX}) + 12'sd64)  )
+          astr_active[m] <= 1'b0;
         else begin
-          astr_x[m] <= $unsigned($signed({1'b0, astr_x[m]}) + vel_x[m]);
-          astr_y[m] <= $unsigned($signed({1'b0, astr_y[m]}) + vel_y[m]);
-        end
-        
+            astr_x[m] <= astr_x_next[m][10:0];
+            astr_y[m] <= astr_y_next[m][10:0];
+        end        
       end
     end
   end
@@ -266,7 +268,7 @@ end
 integer i;
 reg [6:0] half_size; // max LARGE half-width
 
-reg [10:0] draw_x_min, draw_x_max, draw_y_min, draw_y_min;
+reg [10:0] draw_x_min, draw_x_max, draw_y_min, draw_y_max;
 
 always @* begin
     on_asteroid = 1'b0;
