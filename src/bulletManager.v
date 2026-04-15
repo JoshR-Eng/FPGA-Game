@@ -79,6 +79,7 @@ reg signed [3:0] vel_y    [0:MAX_BULLETS-1];
 // Bullet Spawning
 reg        bullet_active  [0:MAX_BULLETS-1];
 reg        spawned = 1'b0;
+reg signed [3:0] spawn_vx_reg, spawn_vy_reg;
 
 // Bullet Heating
 reg [7:0]  gun_heat_reg;  // Current heat level
@@ -120,6 +121,13 @@ always @(posedge clk) begin
   end else if (frame_tick) begin
     spawned = 1'b0;
 
+    // Pipeline the velocity calculation
+    if (frame_tick) begin
+        spawn_vx_reg <= (scaled_dx > 7)  ? 4'd7  : 
+                        (scaled_dx < -7) ? -4'd7 : scaled_dx[3:0];
+        spawn_vy_reg <= (scaled_dy > 7)  ? 4'd7  :
+                        (scaled_dy < -7) ? -4'd7 : scaled_dy[3:0];
+
     // Spawning bullet logic
     if (fire_pending && (gun_heat_reg<OVERHEAT_THRESHOLD)
         && (dominant > 0) ) begin
@@ -129,8 +137,8 @@ always @(posedge clk) begin
         bullet_x[j] <= ship_x + (SHIP_WIDTH / 2);
         bullet_y[j] <= ship_y + (SHIP_HEIGHT / 2);
         // Assign speed based on crosshair
-        vel_x[j] <= spawn_vx;
-        vel_y[j] <= spawn_vy;
+        vel_x[j] <= spawn_vx_reg;
+        vel_y[j] <= spawn_vy_reg;
         // Toggle bullet as active 
         bullet_active[j]  <= 1'b1;
         spawned = 1'b1;
