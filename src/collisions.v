@@ -70,6 +70,12 @@ wire        astr_active [0:MAX_ASTEROIDS-1];
 wire [1:0]  astr_size   [0:MAX_ASTEROIDS-1];
 wire [6:0]  half        [0:MAX_ASTEROIDS-1]; // No. of Pixels for astr. half-size 
 
+// Hit Flags
+reg [15:0] bul_hit_reg  [0:MAX_ASTEROIDS-1];
+reg [15:0] astr_hit_reg [0:MAX_ASTEROIDS-1];
+reg        ship_hit_reg [0:MAX_ASTEROIDS-1];
+
+
 
 //==========================================================
 // --- Collision Logic 
@@ -80,9 +86,9 @@ integer b, a; // Loop counters
 always @* begin
 
   // Default 'Hit Flags' to 0
-  bul_hit   = 16'b0;
-  astr_hit  = 16'b0;
-  ship_hit  = 1'b0;
+  bul_hit_reg   = 16'b0;
+  astr_hit_reg  = 16'b0;
+  ship_hit_reg  = 1'b0;
 
 
   // --- Bullet vs. Asteroid
@@ -96,8 +102,8 @@ always @* begin
           (bul_y[b] + BULLET_HEIGHT > astr_y[a] - half[a]) &&
           (bul_y[b]                 < astr_y[a] + half[a])) 
       begin
-        bul_hit[b]  = 1'b1;
-        astr_hit[a] = 1'b1;
+        bul_hit_reg[b]  = 1'b1;
+        astr_hit_reg[a] = 1'b1;
       end
     end
   end
@@ -111,7 +117,7 @@ always @* begin
         (ship_y + SHIP_HEIGHT > astr_y[a] - half[a]) &&
         (ship_y               < astr_y[a] + half[a]))
     begin
-      ship_hit = 1'b1;
+      ship_hit_reg = 1'b1;
     end  
   end
 
@@ -135,6 +141,16 @@ function [6:0] astr_half_size;
     end
 endfunction
 
+
+//==========================================================
+// --- Pipeline assignments 
+//==========================================================
+
+always @(posedge clk) begin
+  bul_hit   <= bul_hit_reg;
+  astr_hit  <= astr_hit_reg;
+  ship_hit  <= ship_hit_reg;
+end
 
 
 //==========================================================
