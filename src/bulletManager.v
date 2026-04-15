@@ -48,7 +48,7 @@ module bulletManager #(
   input frame_tick,
     // Mouse Input
   input fire_trigger,
-  input [4:0] btn, // Temporary use of buttons before mouse
+  input [4:0] btn, // Temporary use of buttons before mous
     // Drawing Position
   input [10:0] curr_x, curr_y,
     // Ship Position
@@ -57,6 +57,7 @@ module bulletManager #(
   output reg on_bullet,
   output on_cursor,
     // Bullet Position & State
+  input  [15:0]  bul_hit,
   output [175:0] bul_x_packed,
   output [175:0] bul_y_packed,
   output [15:0] bul_active_packed
@@ -149,7 +150,11 @@ always @(posedge clk) begin
     // Bullet Movement Logic ...
     // Should start with basic movement to the right first?
     for (j=0; j<MAX_BULLETS; j=j+1) begin
-      if (bullet_active[j]) begin
+      // Deactivate Bullet if it's hit an asteroid
+      if (bul_hit[i]) begin
+        bul_active[i] <= 1'b0;
+      // Else move the bullet
+      end else if (bullet_active[j]) begin
         // Deactivate if out of bounds
         if (($signed({1'b0, bullet_x[j]}) + vel_x[j] > $signed({1'b0, SCREEN_X_MAX})) ||
             ($signed({1'b0, bullet_x[j]}) + vel_x[j] < $signed({1'b0, SCREEN_X_MIN})) ||

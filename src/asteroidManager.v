@@ -200,7 +200,9 @@ always @(posedge clk) begin
 
     // --- MOVEMENT 
     for (m=0; m<MAX_ASTEROIDS; m=m+1) begin
-      if (astr_active[m]) begin
+      if (astr_hit[m]) begin
+        astr_active[m] <= 1'b0;
+      end else if (astr_active[m]) begin
 
         // Deactivate if off screen
         if ((astr_x_next[m] < -12'sd64)                                 ||
@@ -310,7 +312,7 @@ generate
     assign astr_x_packed[ (11*k)+10 -: 11] = astr_x[k];
     assign astr_y_packed[ (11*k)+10 -: 11] = astr_y[k];
     assign astr_active_packed[k]           = astr_active[k];
-    assign astr_size_packed[ (2*k)+1 -: 1] = astr_size[k];
+    assign astr_size_packed[ (2*k)+1 -: 2] = astr_size[k];
   end
 endgenerate
 

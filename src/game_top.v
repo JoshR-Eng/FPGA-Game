@@ -54,6 +54,7 @@ wire [10:0] curr_x, curr_y;
 
 // Ship Position
 wire [10:0] ship_x, ship_y;
+wire        ship_hit;
 
 // Accelerometer data
 wire [14:0] acl_data;
@@ -67,6 +68,7 @@ wire on_asteroid;
 wire [175:0] bul_x_packed;
 wire [175:0] bul_y_packed;
 wire [15:0] bul_active_packed;
+wire [15:0] bul_hit;
 
 // Asteroid Position & State
 wire [175:0] astr_x_packed;
@@ -176,6 +178,27 @@ asteroidManager #(
   .astr_y_packed(astr_y_packed),
   .astr_active_packed(astr_active_packed),
   .astr_size_packed(astr_size_packed)
+);
+
+// Collision Logic
+collisions #(
+  .MAX_BULLETS(MAX_BULLETS),
+  .MAX_ASTEROIDS(MAX_ASTEROIDS),
+  .SHIP_WIDTH(SHIP_WIDTH),
+  .SHIP_HEIGHT(SHIP_HEIGHT)
+  ) collisions_inst (
+  .bul_x_packed(bul_x_packed),
+  .bul_y_packed(bul_y_packed),
+  .bul_active_packed(bul_active_packed),
+  .ship_x(ship_x),
+  .ship_y(ship_y),
+  .astr_x_packed(astr_x_packed),
+  .astr_y_packed(astr_y_packed),
+  .astr_active_packed(astr_active_packed),
+  .astr_size_packed(astr_size_packed),
+  .bul_hit(bul_hit),
+  .astr_hit(astr_hit),
+  .ship_hit(ship_hit)
 );
 
 
