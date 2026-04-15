@@ -122,11 +122,10 @@ always @(posedge clk) begin
     spawned = 1'b0;
 
     // Pipeline the velocity calculation
-    if (frame_tick) begin
-        spawn_vx_reg <= (scaled_dx > 7)  ? 4'd7  : 
-                        (scaled_dx < -7) ? -4'd7 : scaled_dx[3:0];
-        spawn_vy_reg <= (scaled_dy > 7)  ? 4'd7  :
-                        (scaled_dy < -7) ? -4'd7 : scaled_dy[3:0];
+    spawn_vx_reg <= (scaled_dx > 7)  ? 4'd7  : 
+                    (scaled_dx < -7) ? -4'd7 : scaled_dx[3:0];
+    spawn_vy_reg <= (scaled_dy > 7)  ? 4'd7  :
+                    (scaled_dy < -7) ? -4'd7 : scaled_dy[3:0];
 
     // Spawning bullet logic
     if (fire_pending && (gun_heat_reg<OVERHEAT_THRESHOLD)
