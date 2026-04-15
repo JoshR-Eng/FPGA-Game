@@ -33,6 +33,7 @@ module collisions #(
   )(
     // Clock
   input clk,
+  input rst,
   input frame_tick,
     // Bullet State
   input [175:0] bul_x_packed,
