@@ -75,7 +75,7 @@ wire [6:0]  half        [0:MAX_ASTEROIDS-1]; // No. of Pixels for astr. half-siz
 // --- Collision Logic 
 //==========================================================
 
-integer b, a // Loop counters
+integer b, a; // Loop counters
 
 always @* begin
 
@@ -94,7 +94,7 @@ always @* begin
           (bul_x[b] + BULLET_WIDTH  > astr_x[a] - half[a]) &&
           (bul_x[b]                 < astr_x[a] + half[a]) &&
           (bul_y[b] + BULLET_HEIGHT > astr_y[a] - half[a]) &&
-          (bul_y[b]                 < astr_y[a] + half[a])); 
+          (bul_y[b]                 < astr_y[a] + half[a])) 
       begin
         bul_hit[b]  = 1'b1;
         astr_hit[a] = 1'b1;
@@ -147,7 +147,7 @@ generate
   for (i=0; i<MAX_BULLETS; i=i+1) begin : unflatten_bullets
     assign bul_x[i]      = bul_x_packed[(i*11)+10 -: 11] ;
     assign bul_y[i]      = bul_y_packed[(i*11)+10 -: 11] ;
-    assign bul_active[i] = bul_y_packed[i] ;
+    assign bul_active[i] = bul_active_packed[i] ;
   end
 endgenerate
 
@@ -157,8 +157,8 @@ generate
   for (j=0; j<MAX_ASTEROIDS; j=j+1) begin : unflatten_asteroids
     assign astr_x[j]      = astr_x_packed[(j*11)+10 -: 11] ;
     assign astr_y[j]      = astr_y_packed[(j*11)+10 -: 11] ;
-    assign astr_active[j] = astr_y_packed[j] ;
-    assign astr_size[j]   = astr_size_packed[(j*2)+1 -: 1];
+    assign astr_active[j] = astr_active_packed[j] ;
+    assign astr_size[j]   = astr_size_packed[(j*2)+1 -: 2];
 
     // This then takes `astr_size` into pixel size
     assign half[j]        = astr_half_size(astr_size[j]);
