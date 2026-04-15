@@ -191,6 +191,7 @@ collisions #(
   .SHIP_WIDTH(SHIP_WIDTH),
   .SHIP_HEIGHT(SHIP_HEIGHT)
   ) collisions_inst (
+  .clk(pixclk),
   .bul_x_packed(bul_x_packed),
   .bul_y_packed(bul_y_packed),
   .bul_active_packed(bul_active_packed),

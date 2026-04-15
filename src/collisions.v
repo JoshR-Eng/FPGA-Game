@@ -31,6 +31,8 @@ module collisions #(
   parameter ASTR_MEDIUM   = 7'd24,
   parameter ASTR_LARGE    = 7'd48
   )(
+    // Clock
+  input clk,
     // Bullet State
   input [175:0] bul_x_packed,
   input [175:0] bul_y_packed,
@@ -71,9 +73,9 @@ wire [1:0]  astr_size   [0:MAX_ASTEROIDS-1];
 wire [6:0]  half        [0:MAX_ASTEROIDS-1]; // No. of Pixels for astr. half-size 
 
 // Hit Flags
-reg [15:0] bul_hit_reg  [0:MAX_ASTEROIDS-1];
-reg [15:0] astr_hit_reg [0:MAX_ASTEROIDS-1];
-reg        ship_hit_reg [0:MAX_ASTEROIDS-1];
+reg [15:0] bul_hit_reg ; 
+reg [15:0] astr_hit_reg;
+reg        ship_hit_reg;
 
 
 
