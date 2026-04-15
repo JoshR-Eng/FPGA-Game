@@ -39,6 +39,7 @@ module asteroidManager#(
   input [10:0] curr_x,
   input [10:0] curr_y,
   output reg   on_asteroid,
+
     // Difficulty
   input [1:0] difficulty,
 
@@ -46,7 +47,8 @@ module asteroidManager#(
   input  [15:0]   astr_hit,
   output [175:0]  astr_x_packed,
   output [175:0]  astr_y_packed,
-  output [15:0]   astr_active_packed
+  output [15:0]   astr_active_packed,
+  output [31:0]   astr_size_packed
   );
  
 
@@ -308,6 +310,7 @@ generate
     assign astr_x_packed[ (11*k)+10 -: 11] = astr_x[k];
     assign astr_y_packed[ (11*k)+10 -: 11] = astr_y[k];
     assign astr_active_packed[k]           = astr_active[k];
+    assign astr_size_packed[ (2*k)+1 -: 1] = astr_size[k];
   end
 endgenerate
 

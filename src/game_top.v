@@ -72,6 +72,7 @@ wire [15:0] bul_active_packed;
 wire [175:0] astr_x_packed;
 wire [175:0] astr_y_packed;
 wire [15:0] astr_active_packed;
+wire [32:0] astr_size_packed;
 wire [15:0] astr_hit;
 assign astr_hit = 16'b0; // temp. until collision logic made
 
@@ -173,7 +174,8 @@ asteroidManager #(
   .astr_hit(astr_hit),
   .astr_x_packed(astr_x_packed),
   .astr_y_packed(astr_y_packed),
-  .astr_active_packed(astr_active_packed)
+  .astr_active_packed(astr_active_packed),
+  .astr_size_packed(astr_size_packed)
 );
 
 
