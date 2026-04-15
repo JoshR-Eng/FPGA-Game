@@ -74,9 +74,8 @@ wire [15:0] bul_hit;
 wire [175:0] astr_x_packed;
 wire [175:0] astr_y_packed;
 wire [15:0] astr_active_packed;
-wire [32:0] astr_size_packed;
+wire [31:0] astr_size_packed;
 wire [15:0] astr_hit;
-assign astr_hit = 16'b0; // temp. until collision logic made
 
 
 // ==========================================================
@@ -156,7 +155,8 @@ bulletManager #(
   .on_cursor(on_cursor),
   .bul_x_packed(bul_x_packed),
   .bul_y_packed(bul_y_packed),
-  .bul_active_packed(bul_active_packed)
+  .bul_active_packed(bul_active_packed),
+  .bul_hit(bul_hit)
 );
 
 // Asteroid Manager
