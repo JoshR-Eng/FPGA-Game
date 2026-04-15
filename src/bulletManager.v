@@ -152,7 +152,7 @@ always @(posedge clk) begin
     for (j=0; j<MAX_BULLETS; j=j+1) begin
       // Deactivate Bullet if it's hit an asteroid
       if (bul_hit[i]) begin
-        bul_active[i] <= 1'b0;
+        bullet_active[i] <= 1'b0;
       // Else move the bullet
       end else if (bullet_active[j]) begin
         // Deactivate if out of bounds
