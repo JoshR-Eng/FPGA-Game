@@ -33,6 +33,7 @@ module collisions #(
   )(
     // Clock
   input clk,
+  input frame_tick,
     // Bullet State
   input [175:0] bul_x_packed,
   input [175:0] bul_y_packed,
@@ -72,10 +73,7 @@ wire        astr_active [0:MAX_ASTEROIDS-1];
 wire [1:0]  astr_size   [0:MAX_ASTEROIDS-1];
 wire [6:0]  half        [0:MAX_ASTEROIDS-1]; // No. of Pixels for astr. half-size 
 
-// Hit Flags
-reg [15:0] bul_hit_reg ; 
-reg [15:0] astr_hit_reg;
-reg        ship_hit_reg;
+
 
 
 
@@ -86,43 +84,48 @@ reg        ship_hit_reg;
 integer b, a; // Loop counters
 
 always @* begin
+  if (!rst) begin
+    // Default 'Hit Flags' to 0
+    bul_hit   = 16'b0;
+    astr_hit  = 16'b0;
+    ship_hit  = 1'b0;
 
-  // Default 'Hit Flags' to 0
-  bul_hit_reg   = 16'b0;
-  astr_hit_reg  = 16'b0;
-  ship_hit_reg  = 1'b0;
+  end else if (frame_tick) begin
 
+    bul_hit   = 16'b0;
+    astr_hit  = 16'b0;
+    ship_hit  = 1'b0;
 
-  // --- Bullet vs. Asteroid
-  for (b=0; b<MAX_BULLETS; b=b+1) begin
-    for (a=0; a<MAX_ASTEROIDS; a=a+1) begin
-      
-      // Determine if bullet is within asteroid 
-      if  (bul_active[b] && astr_active[a] &&
-          (bul_x[b] + BULLET_WIDTH  > astr_x[a] - half[a]) &&
-          (bul_x[b]                 < astr_x[a] + half[a]) &&
-          (bul_y[b] + BULLET_HEIGHT > astr_y[a] - half[a]) &&
-          (bul_y[b]                 < astr_y[a] + half[a])) 
-      begin
-        bul_hit_reg[b]  = 1'b1;
-        astr_hit_reg[a] = 1'b1;
+    // --- Bullet vs. Asteroid
+    for (b=0; b<MAX_BULLETS; b=b+1) begin
+      for (a=0; a<MAX_ASTEROIDS; a=a+1) begin
+        
+        // Determine if bullet is within asteroid 
+        if  (bul_active[b] && astr_active[a] &&
+            (bul_x[b] + BULLET_WIDTH  > astr_x[a] - half[a]) &&
+            (bul_x[b]                 < astr_x[a] + half[a]) &&
+            (bul_y[b] + BULLET_HEIGHT > astr_y[a] - half[a]) &&
+            (bul_y[b]                 < astr_y[a] + half[a])) 
+        begin
+          bul_hit[b]  = 1'b1;
+          astr_hit[a] = 1'b1;
+        end
       end
     end
+
+
+    // --- Ship vs. Asteroid
+    for (a=0; a<MAX_ASTEROIDS; a=a+1) begin
+      if  (astr_active[a] &&
+          (ship_x + SHIP_WIDTH  > astr_x[a] - half[a]) &&
+          (ship_x               < astr_x[a] + half[a]) &&
+          (ship_y + SHIP_HEIGHT > astr_y[a] - half[a]) &&
+          (ship_y               < astr_y[a] + half[a]))
+      begin
+        ship_hit = 1'b1;
+      end  
+    end
   end
-
-
-  // --- Ship vs. Asteroid
-  for (a=0; a<MAX_ASTEROIDS; a=a+1) begin
-    if  (astr_active[a] &&
-        (ship_x + SHIP_WIDTH  > astr_x[a] - half[a]) &&
-        (ship_x               < astr_x[a] + half[a]) &&
-        (ship_y + SHIP_HEIGHT > astr_y[a] - half[a]) &&
-        (ship_y               < astr_y[a] + half[a]))
-    begin
-      ship_hit_reg = 1'b1;
-    end  
-  end
-
 end
 
 
@@ -143,16 +146,6 @@ function [6:0] astr_half_size;
     end
 endfunction
 
-
-//==========================================================
-// --- Pipeline assignments 
-//==========================================================
-
-always @(posedge clk) begin
-  bul_hit   <= bul_hit_reg;
-  astr_hit  <= astr_hit_reg;
-  ship_hit  <= ship_hit_reg;
-end
 
 
 //==========================================================
