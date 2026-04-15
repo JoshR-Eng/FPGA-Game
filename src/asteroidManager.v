@@ -63,6 +63,8 @@ reg [10:0]        astr_y      [0:MAX_ASTEROIDS-1];
 reg signed [3:0]  vel_x       [0:MAX_ASTEROIDS-1];       
 reg signed [3:0]  vel_y       [0:MAX_ASTEROIDS-1];       
   // Size & Activity
+
+(* KEEP = "true", MAX_FANOUT = 16 *)
 reg        [1:0]  astr_size   [0:MAX_ASTEROIDS-1];  // 00=SM, 01=MD, 10=LG
 reg               astr_active [0:MAX_ASTEROIDS-1];
 
