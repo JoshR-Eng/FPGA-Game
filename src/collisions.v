@@ -84,7 +84,7 @@ wire [6:0]  half        [0:MAX_ASTEROIDS-1]; // No. of Pixels for astr. half-siz
 
 integer b, a; // Loop counters
 
-always @* begin
+always @(posedge clk) begin
   if (!rst) begin
     // Default 'Hit Flags' to 0
     bul_hit   = 16'b0;
