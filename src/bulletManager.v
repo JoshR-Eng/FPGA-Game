@@ -129,7 +129,7 @@ always @(posedge clk) begin
 
     // Spawning bullet logic
     if (fire_pending && (gun_heat_reg<OVERHEAT_THRESHOLD)
-        && (dominant > 0) ) begin
+        && (dominant_reg > 0) ) begin
     for (j=0; j<MAX_BULLETS; j=j+1) begin
       if (!bullet_active[j] && !spawned) begin
         // Spawn bullet at ship loc
@@ -176,6 +176,11 @@ always @(posedge clk) begin
     end
   end
 end
+
+
+// ==========================================================
+// --- Flatten Arrays for IO 
+// ==========================================================
 
 // --- Flatten Arrays so it can be passed outside the module
 genvar k;
@@ -273,9 +278,18 @@ always @* begin
   else                          shift_n = 4'd0;
 end
 
+// 5. Pipeline stages 
+//      Breaks the barrel shifter timing path
+reg [3:0]   shift_n_reg;
+reg [11:0]  dominant_reg;
+always @(posedge clk) begin
+  shift_n_reg   <= shift_n;
+  dominant_reg  <= dominant;
+end
+
 // 5. Scale velocities
-wire signed [10:0] scaled_dx = raw_dx >>> shift_n; // arithmetic right shift
-wire signed [10:0] scaled_dy = raw_dy >>> shift_n; 
+wire signed [10:0] scaled_dx = raw_dx >>> shift_n_reg; // arithmetic right shift
+wire signed [10:0] scaled_dy = raw_dy >>> shift_n_reg; 
 
 
 
