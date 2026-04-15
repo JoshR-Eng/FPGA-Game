@@ -158,8 +158,8 @@ always @(posedge clk) begin
     // Should start with basic movement to the right first?
     for (j=0; j<MAX_BULLETS; j=j+1) begin
       // Deactivate Bullet if it's hit an asteroid
-      if (bul_hit[i]) begin
-        bullet_active[i] <= 1'b0;
+      if (bul_hit[j]) begin
+        bullet_active[j] <= 1'b0;
       // Else move the bullet
       end else if (bullet_active[j]) begin
         // Deactivate if out of bounds
@@ -277,9 +277,7 @@ end
 wire signed [10:0] scaled_dx = raw_dx >>> shift_n; // arithmetic right shift
 wire signed [10:0] scaled_dy = raw_dy >>> shift_n; 
 
-// 6. Camp to +- BULLET_SPEED
-wire signed [3:0] spawn_vx = (scaled_dx > 7) ? 4'd7 : (scaled_dx < -7) ? -4'd7 : scaled_dx[3:0];
-wire signed [3:0] spawn_vy = (scaled_dy > 7) ? 4'd7 : (scaled_dy < -7) ? -4'd7 : scaled_dy[3:0];
+
 
 
 // ==========================================================
