@@ -100,6 +100,9 @@ localparam SHIP_HEIGHT  = 11'd100;
   // Accelerometer Deadzone
 localparam DEADZONE = 4'd2;
 
+  // Bullet config
+localparam  MAX_BULLETS = 16;
+
   // Asteroid config
 localparam MAX_ASTEROIDS = 16;
 localparam ASTR_SMALL    = 7'd12;
@@ -137,7 +140,8 @@ bulletManager #(
   .SCREEN_Y_MAX(SCREEN_Y_MAX),
   .SCREEN_Y_MIN(SCREEN_Y_MIN),
   .SHIP_WIDTH(SHIP_WIDTH),
-  .SHIP_HEIGHT(SHIP_HEIGHT)
+  .SHIP_HEIGHT(SHIP_HEIGHT),
+  .MAX_BULLETS(MAX_BULLETS)
   ) bullet_inst (
   .clk(pixclk),
   .rst(rst),
