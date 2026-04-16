@@ -133,7 +133,7 @@ end
 assign health       = health_reg;
 assign score        = score_reg;
 assign game_state   = state_reg;
-output game_active  = (state_reg == PLAYING);
+assign game_active  = (state_reg == PLAYING);
 assign blink        = invis_timer[3]; // Toggles every 8 frames
 
 endmodule
