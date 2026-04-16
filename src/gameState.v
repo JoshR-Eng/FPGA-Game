@@ -82,7 +82,7 @@ always @(posedge clk) begin
     score_reg   <= 16'd0;
     invis_timer <= 7'd0;
     state_reg   <= IDLE;
-  end else if (frame_tick)
+  end else if (frame_tick) begin
     case (state_reg) 
       
 
