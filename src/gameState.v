@@ -123,11 +123,12 @@ always @(posedge clk) begin
 
       // GAME OVER STATE
       GAME_OVER: begin 
-        if (fire_pulse)
+        if (fire_pulse) begin
           state_reg <= IDLE;
           health_reg <= 2'd3;      // restore lives
           score_reg  <= 16'd0;     // reset score
           invis_timer <= 7'd0;     // clear any invincibility
+        end
       end
 
        
