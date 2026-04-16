@@ -96,7 +96,7 @@ always @(posedge clk) begin
       IDLE: begin
         if (fire_pulse) begin
           state_reg <= PLAYING;
-          invis_timer <= 7'd60:
+          invis_timer <= 7'd60;
         end
       end
 
