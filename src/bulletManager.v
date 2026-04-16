@@ -66,7 +66,7 @@ module bulletManager #(
   output [175:0] bul_x_packed,
   output [175:0] bul_y_packed,
   output [15:0] bul_active_packed,
-  output reg [7:0] gun_heat
+  output [7:0] gun_heat
   );
 
 
@@ -87,8 +87,8 @@ reg        bullet_active  [0:MAX_BULLETS-1];
 reg        spawned = 1'b0;
 reg signed [3:0] spawn_vx_reg, spawn_vy_reg;
 
-
-
+reg [7:0] gun_heat_reg;
+assign gun_heat = gun_heat_reg
 
 
 // ==========================================================
