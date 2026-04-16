@@ -29,13 +29,15 @@ module game_top(
     // VGA
     output [3:0] pix_r, pix_g, pix_b,
     output hsync, vsync,
-
     
     // Accelerometer 
     input ACL_MISO,
     output ACL_MOSI,
     output ACL_SCLK,
-    output ACL_CSN
+    output ACL_CSN,
+
+    // LED
+    output [15:0] LED
     );
 
 // ==========================================================
@@ -44,13 +46,15 @@ module game_top(
 
 // Internal Clocks & Timing
 wire pixclk;
-wire frame_tick;
-wire [1:0] difficulty;
-assign difficulty = sw[1:0];
+wire frame_tick_ungated;
+wire frame_tick = frame_tick_ungated && game_active;
 
 // VGA
-wire [3:0] draw_r, draw_g, draw_b;
-wire [10:0] curr_x, curr_y;
+wire [3:0] draw_r;
+wire [3:0] draw_g;
+wire [3:0] draw_b;
+wire [10:0] curr_x;
+wire [10:0] curr_y;
 
 // Ship Position
 wire [10:0] ship_x, ship_y;
@@ -69,6 +73,7 @@ wire [175:0] bul_x_packed;
 wire [175:0] bul_y_packed;
 wire [15:0] bul_active_packed;
 wire [15:0] bul_hit;
+assign LED = {gun_heat, 8'b0};
 
 // Asteroid Position & State
 wire [175:0] astr_x_packed;
@@ -76,6 +81,16 @@ wire [175:0] astr_y_packed;
 wire [15:0] astr_active_packed;
 wire [31:0] astr_size_packed;
 wire [15:0] astr_hit;
+
+// Game State
+wire [1:0]  health;
+wire [15:0] score;
+wire        blink;
+wire        game_active;
+wire [1:0]  game_state;
+wire [7:0]  gun_heat;       // from bulletManager
+wire [1:0] difficulty;
+assign difficulty = sw[1:0];
 
 
 // ==========================================================
@@ -156,7 +171,8 @@ bulletManager #(
   .bul_x_packed(bul_x_packed),
   .bul_y_packed(bul_y_packed),
   .bul_active_packed(bul_active_packed),
-  .bul_hit(bul_hit)
+  .bul_hit(bul_hit),
+  .gun_heat(gun_heat)
 );
 
 // Asteroid Manager
@@ -208,6 +224,19 @@ collisions #(
   .ship_hit(ship_hit)
 );
 
+gameState game_inst (
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick),
+  .fire_trigger(btn[0]),
+  .astr_hit(astr_hit),
+  .ship_hit(ship_hit),
+  .health(health),
+  .score(score),
+  .blink(blink),
+  .game_active(game_active),
+  .game_state(game_state)
+);
 
 // ==========================================================
 // --- Clock Generators
@@ -255,7 +284,9 @@ drawcon #(
     .curr_x(curr_x), .curr_y(curr_y),
     .on_bullet(on_bullet),
     .on_cursor(on_cursor),
-    .on_asteroid(on_asteroid)
+    .on_asteroid(on_asteroid),
+    .blink(bink),
+    .game_state(game_state)
     );
     // Instantiate VGA Module
 vga vga_inst(
@@ -264,7 +295,7 @@ vga vga_inst(
     .pix_r(pix_r), .pix_g(pix_g), .pix_b(pix_b),
     .curr_x(curr_x), .curr_y(curr_y),
     .hsync(hsync), .vsync(vsync),
-    .frame_tick(frame_tick)
+    .frame_tick(frame_tick_ungated)
     );
  
 endmodule

@@ -46,21 +46,27 @@ module bulletManager #(
   input clk,
   input rst,
   input frame_tick,
+
     // Mouse Input
   input fire_trigger,
   input [4:0] btn, // Temporary use of buttons before mous
+
     // Drawing Position
   input [10:0] curr_x, curr_y,
+
     // Ship Position
   input [10:0] ship_x, ship_y,
+
     // Boolean if curr_x/y is on bullet or cursor
   output reg on_bullet,
   output on_cursor,
+
     // Bullet Position & State
   input  [15:0]  bul_hit,
   output [175:0] bul_x_packed,
   output [175:0] bul_y_packed,
-  output [15:0] bul_active_packed
+  output [15:0] bul_active_packed,
+  output reg [7:0] gun_heat
   );
 
 
@@ -81,8 +87,6 @@ reg        bullet_active  [0:MAX_BULLETS-1];
 reg        spawned = 1'b0;
 reg signed [3:0] spawn_vx_reg, spawn_vy_reg;
 
-// Bullet Heating
-reg [7:0]  gun_heat_reg;  // Current heat level
 
 
 

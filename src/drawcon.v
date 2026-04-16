@@ -29,6 +29,8 @@ module drawcon #(
     input on_bullet,
     input on_cursor,
     input on_asteroid,
+    input blink,
+    input [1:0] game_state,
     input [10:0] curr_x, curr_y,
     input [10:0] ship_x, ship_y,
     output [3:0] draw_r, draw_g, draw_b
@@ -73,46 +75,48 @@ assign on_gamebar = (curr_y <= SCREEN_Y_MIN);
 // ==========================================================
 
 always @* begin
-    // Default: BACKGROUND
-    //  Standard black space background
-    mux_r = 4'h0;
+  // Default: BACKGROUND
+  //  Standard black space background
+  mux_r = 4'h0;
+  mux_g = 4'h0;
+  mux_b = 4'h1;
+
+  // Layer 1: ASTEROIDS (grey)
+  if (on_asteroid) begin
+    mux_r = 4'hA;
+    mux_g = 4'hA;
+    mux_b = 4'hA;
+  end
+
+  // Layer 2: BULLET (red)
+  if (on_bullet) begin
+    mux_r = 4'hF;
     mux_g = 4'h0;
-    mux_b = 4'h1;
+    mux_b = 4'h0;
+  end
 
-    // Layer 1: ASTEROIDS (grey)
-    if (on_asteroid) begin
-      mux_r = 4'hA;
-      mux_g = 4'hA;
-      mux_b = 4'hA;
-    end
+  // Layer 3: SHIP
+  if (ship_on_delay && (rom_pixel[11:0] != 12'h000) && !blink) begin
+      mux_r = rom_pixel[11:8];
+      mux_g = rom_pixel[7:4];
+      mux_b = rom_pixel[3:0];
+  end
+  
+  // Layer 4: Crosshair
+  if (on_cursor) begin
+    mux_r = 4'hF;
+    mux_g = 4'hF;
+    mux_b = 4'hF;
+  end
 
-    // Layer 2: BULLET (red)
-    if (on_bullet) begin
-      mux_r = 4'hF;
-      mux_g = 4'h0;
-      mux_b = 4'h0;
-    end
-
-    // Layer 3: SHIP
-    if (ship_on_delay && (rom_pixel[11:0] != 12'h000)) begin
-        mux_r = rom_pixel[11:8];
-        mux_g = rom_pixel[7:4];
-        mux_b = rom_pixel[3:0];
-    end
-    
-    // Layer 4: Crosshair
-    if (on_cursor) begin
-      mux_r = 4'hF;
-      mux_g = 4'hF;
-      mux_b = 4'hF;
-    end
-
-    // Layer 5: Gamebar
-    if (on_gamebar) begin
-      mux_r = 4'h0;
-      mux_g = 4'h0;
-      mux_b = 4'hF;
-    end
+  // Layer 5: Gamebar
+  if (on_gamebar) begin
+    case (game_state)
+      2'd0: begin mux_r = 4'h0; mux_g = 4'h0; mux_b = 4'hF; end  // IDLE — blue
+      2'd1: begin mux_r = 4'h0; mux_g = 4'h5; mux_b = 4'h0; end  // PLAYING — dark green
+      2'd2: begin mux_r = 4'hF; mux_g = 4'h0; mux_b = 4'h0; end  // GAME_OVER — red
+    endcase
+  end
 end
 
 
