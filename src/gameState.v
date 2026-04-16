@@ -35,9 +35,9 @@ module gameState #(
     // Game State logic
   output [1:0]  health,
   output [15:0] score,
-  output reg    blink,
+  output        blink,
   output        game_active,  // Gates other modules
-  output [1:0]  game_state,   // IDLE/PLAYING/GAME_OVER
+  output [1:0]  game_state    // IDLE/PLAYING/GAME_OVER
 );
     
 
@@ -78,10 +78,10 @@ end
 
 always @(posedge clk) begin
   if (!rst) begin
-    health_reg          <= 2'd3;
-    score_reg           <= 16'd0;
-    invincibility_timer <= 7'd0;
-    hit                 <= 1'b0;
+    health_reg  <= 2'd3;
+    score_reg   <= 16'd0;
+    invis_timer <= 7'd0;
+    state_reg   <= IDLE;
   end else if (frame_tick)
     case (state_reg) 
       
@@ -117,7 +117,7 @@ always @(posedge clk) begin
 
       // GAME OVER STATE
       GAME_OVER: begin 
-        if (!rst || fire_trigger)
+        if (fire_trigger)
           state_reg <= IDLE;
       end
 
@@ -130,8 +130,10 @@ end
 // ==========================================================
 // --- Assignments 
 // ==========================================================
-assign health     = health_reg;
-assign score      = score_reg;
-assign game_state = state_reg;
+assign health       = health_reg;
+assign score        = score_reg;
+assign game_state   = state_reg;
+output game_active  = (state_reg == PLAYING);
+assign blink        = invis_timer[3]; // Toggles every 8 frames
 
 endmodule
