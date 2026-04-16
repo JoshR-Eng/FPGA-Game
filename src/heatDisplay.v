@@ -69,7 +69,7 @@ always @(posedge clk) begin
         4'd6  :   LED_reg = 16'b0000_1111_1111_1111;
         4'd7  :   LED_reg = 16'b0011_1111_1111_1111;
         4'd8  :   LED_reg = 16'b1111_1111_1111_1111;
-        default:  LED_REG = 16'h0000;
+        default:  LED_reg = 16'h0000;
       endcase
   end
 end

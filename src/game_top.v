@@ -73,7 +73,6 @@ wire [175:0] bul_x_packed;
 wire [175:0] bul_y_packed;
 wire [15:0] bul_active_packed;
 wire [15:0] bul_hit;
-assign LED = {gun_heat, 8'b0};
 
 // Asteroid Position & State
 wire [175:0] astr_x_packed;
@@ -231,6 +230,7 @@ collisions #(
   .ship_hit(ship_hit)
 );
 
+// Game State Logic
 gameState game_inst (
   .clk(pixclk),
   .rst(rst),
@@ -244,6 +244,19 @@ gameState game_inst (
   .game_active(game_active),
   .game_state(game_state),
   .new_game(new_game)
+);
+
+
+// Heat Display
+heatDisplay #(
+  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD),
+  .STEP(OVERHEAT_THRESHOLD / 8)
+) heat_inst (
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick_ungated),
+  .gun_heat(gun_heat),
+  .LED(LED)
 );
 
 // ==========================================================
