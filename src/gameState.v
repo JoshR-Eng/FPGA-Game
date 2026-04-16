@@ -59,8 +59,12 @@ localparam IDLE      = 2'd0;
 localparam PLAYING   = 2'd1;
 localparam GAME_OVER = 2'd2;
 
+// Rising edge detection for fire_trigger
+reg fire_prev;
+wire fire_pulse = fire_trigger & ~fire_prev;
+
 // ==========================================================
-// --- State Encoding 
+// --- Game Score Counter
 // ==========================================================  
 
 integer i;
@@ -83,12 +87,13 @@ always @(posedge clk) begin
     invis_timer <= 7'd0;
     state_reg   <= IDLE;
   end else if (frame_tick) begin
+    fire_prev <= fire_trigger;
     case (state_reg) 
       
 
       // IDLE STATE
       IDLE: begin
-        if (fire_trigger)
+        if (fire_pulse)
           state_reg <= PLAYING;
       end
 
@@ -117,8 +122,11 @@ always @(posedge clk) begin
 
       // GAME OVER STATE
       GAME_OVER: begin 
-        if (fire_trigger)
+        if (fire_pulse)
           state_reg <= IDLE;
+          health_reg <= 2'd3;      // restore lives
+          score_reg  <= 16'd0;     // reset score
+          invis_timer <= 7'd0;     // clear any invincibility
       end
 
        
