@@ -37,7 +37,8 @@ module gameState #(
   output [15:0] score,
   output        blink,
   output        game_active,  // Gates other modules
-  output [1:0]  game_state    // IDLE/PLAYING/GAME_OVER
+  output [1:0]  game_state,   // IDLE/PLAYING/GAME_OVER
+  output        new_game
 );
     
 
@@ -143,5 +144,11 @@ assign score        = score_reg;
 assign game_state   = state_reg;
 assign game_active  = (state_reg == PLAYING);
 assign blink        = invis_timer[3]; // Toggles every 8 frames
+
+// new game pulse
+reg  [1:0]  game_state_prev;
+always @(posedge pixclk) game_state_prev <= game_state;
+assign new_game = (game_state == 2'd1) && (game_state_prev != 2'd1);
+
 
 endmodule

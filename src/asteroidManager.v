@@ -34,6 +34,7 @@ module asteroidManager#(
   input clk,
   input rst,
   input frame_tick,
+  input new_game,
 
     // Display
   input [10:0] curr_x,
@@ -188,6 +189,16 @@ always @(posedge clk) begin
 
   // If reset is pressed, reset all asteroids
   if (!rst) begin
+    spawn_timer <= 10'd0;
+    // reset all asteroid slots to inactive
+    for (s=0; s<MAX_ASTEROIDS; s=s+1) begin
+      astr_active[s] <= 1'b0;
+      astr_x[s]      <= 11'b0;
+      astr_y[s]      <= 11'b0;
+    end
+
+  // Reset if new game begins
+  end else if (new_game) begin
     spawn_timer <= 10'd0;
     // reset all asteroid slots to inactive
     for (s=0; s<MAX_ASTEROIDS; s=s+1) begin

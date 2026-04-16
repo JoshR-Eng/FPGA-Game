@@ -86,11 +86,13 @@ wire [15:0] astr_hit;
 wire [1:0]  health;
 wire [15:0] score;
 wire        blink;
+wire        new_game;
 wire        game_active;
 wire [1:0]  game_state;
-wire [7:0]  gun_heat;       // from bulletManager
+wire [7:0]  gun_heat;     
 wire [1:0] difficulty;
 assign difficulty = sw[1:0];
+
 
 
 // ==========================================================
@@ -197,7 +199,8 @@ asteroidManager #(
   .astr_x_packed(astr_x_packed),
   .astr_y_packed(astr_y_packed),
   .astr_active_packed(astr_active_packed),
-  .astr_size_packed(astr_size_packed)
+  .astr_size_packed(astr_size_packed),
+  .new_game(new_game)
 );
 
 // Collision Logic
@@ -235,7 +238,8 @@ gameState game_inst (
   .score(score),
   .blink(blink),
   .game_active(game_active),
-  .game_state(game_state)
+  .game_state(game_state),
+  .new_game(new_game)
 );
 
 // ==========================================================
