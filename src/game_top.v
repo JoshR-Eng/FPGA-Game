@@ -118,6 +118,7 @@ localparam DEADZONE = 4'd2;
 
   // Bullet config
 localparam  MAX_BULLETS = 16;
+localparam  OVERHEAT_THRESHOLD  = 8'd200;
 
   // Asteroid config
 localparam MAX_ASTEROIDS = 16;
@@ -158,7 +159,8 @@ bulletManager #(
   .SCREEN_Y_MIN(SCREEN_Y_MIN),
   .SHIP_WIDTH(SHIP_WIDTH),
   .SHIP_HEIGHT(SHIP_HEIGHT),
-  .MAX_BULLETS(MAX_BULLETS)
+  .MAX_BULLETS(MAX_BULLETS),
+  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD)
   ) bullet_inst (
   .clk(pixclk),
   .rst(rst),

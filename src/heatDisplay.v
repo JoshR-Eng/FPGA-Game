@@ -21,15 +21,16 @@
 
 
 module heatDisplay #(
-  parameter HEAT_THRESHOLD = 8'd200,
-  parameter BLINK_BIT      = 4
+  parameter OVERHEAT_THRESHOLD = 8'd200,
+  parameter BLINK_BIT      = 4,
+  parameter STEP           = 25,
   )(
     input clk, 
     input rst,
     input frame_tick,
 
     input [7:0] gun_heat,
-    output reg [15:0] LED
+    output [15:0] LED
     );
 
 // ==========================================================
@@ -40,12 +41,41 @@ always @(posedge clk)
   if (frame_tick) 
     blink_counter <= blink_counter + 1'b1;
 
-wire blink = blink_counter[BLINK_BIT]; // toggles every 2^BLINK_BIT frames 
+reg overheat;
+wire blink = blink_counter[BLINK_BIT] && overheat; // toggles every 2^BLINK_BIT frames 
+
+always @*
+  if (gun_heat > OVERHEAT_THRESHOLD)
+    overheat = 1'b1;
+
 
 // ==========================================================
 // --- Heat to LED Mapping 
 // ==========================================================
-:
+
+wire [3:0] level = gun_heat / STEP;
+reg [15:0] LED_reg
+
+always @(posedge clk) begin
+  if (frame_tick) begin
+
+    if (gun_heat >= OVERHEAT_THRESHOLD)
+      LED_reg = blink ? 16'hFFFF: 16'h0000;
+    else 
+      case (level)
+        4'd1  : LED_reg = 16'b0000_0000_0000_0011;
+        4'd2  : LED_reg = 16'b0000_0000_0000_1111;
+        4'd3  : LED_reg = 16'b0000_0000_0011_1111;
+        4'd4  : LED_reg = 16'b0000_0000_1111_1111;
+        4'd5  : LED_reg = 16'b0000_0011_1111_1111;
+        4'd6  : LED_reg = 16'b0000_1111_1111_1111;
+        4'd7  : LED_reg = 16'b0011_1111_1111_1111;
+        4'd8  : LED_reg = 16'b1111_1111_1111_1111;
+      endcase
+  end
+end
+
+assign LED = LED_reg;
 
 // ==========================================================
 // --- END
