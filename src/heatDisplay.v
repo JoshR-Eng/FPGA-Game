@@ -22,8 +22,8 @@
 
 module heatDisplay #(
   parameter OVERHEAT_THRESHOLD = 8'd200,
-  parameter BLINK_BIT      = 4,
-  parameter STEP           = 25,
+  parameter BLINK_BIT      = 3,
+  parameter STEP           = 25
   )(
     input clk, 
     input rst,
@@ -38,15 +38,13 @@ module heatDisplay #(
 // ==========================================================
 reg [4:0] blink_counter;
 always @(posedge clk)
-  if (frame_tick) 
+  if (!rst)
+    blink_counter <= 4'b0;
+  else if (frame_tick) 
     blink_counter <= blink_counter + 1'b1;
 
-reg overheat;
+wire overheat = (gun_heat >= OVERHEAT_THRESHOLD);
 wire blink = blink_counter[BLINK_BIT] && overheat; // toggles every 2^BLINK_BIT frames 
-
-always @*
-  if (gun_heat > OVERHEAT_THRESHOLD)
-    overheat = 1'b1;
 
 
 // ==========================================================
@@ -54,23 +52,24 @@ always @*
 // ==========================================================
 
 wire [3:0] level = gun_heat / STEP;
-reg [15:0] LED_reg
+reg [15:0] LED_reg;
 
 always @(posedge clk) begin
   if (frame_tick) begin
 
     if (gun_heat >= OVERHEAT_THRESHOLD)
-      LED_reg = blink ? 16'hFFFF: 16'h0000;
+      LED_reg <= blink ? 16'hFFFF: 16'h0000;
     else 
       case (level)
-        4'd1  : LED_reg = 16'b0000_0000_0000_0011;
-        4'd2  : LED_reg = 16'b0000_0000_0000_1111;
-        4'd3  : LED_reg = 16'b0000_0000_0011_1111;
-        4'd4  : LED_reg = 16'b0000_0000_1111_1111;
-        4'd5  : LED_reg = 16'b0000_0011_1111_1111;
-        4'd6  : LED_reg = 16'b0000_1111_1111_1111;
-        4'd7  : LED_reg = 16'b0011_1111_1111_1111;
-        4'd8  : LED_reg = 16'b1111_1111_1111_1111;
+        4'd1  :   LED_reg = 16'b0000_0000_0000_0011;
+        4'd2  :   LED_reg = 16'b0000_0000_0000_1111;
+        4'd3  :   LED_reg = 16'b0000_0000_0011_1111;
+        4'd4  :   LED_reg = 16'b0000_0000_1111_1111;
+        4'd5  :   LED_reg = 16'b0000_0011_1111_1111;
+        4'd6  :   LED_reg = 16'b0000_1111_1111_1111;
+        4'd7  :   LED_reg = 16'b0011_1111_1111_1111;
+        4'd8  :   LED_reg = 16'b1111_1111_1111_1111;
+        default:  LED_REG = 16'h0000;
       endcase
   end
 end
