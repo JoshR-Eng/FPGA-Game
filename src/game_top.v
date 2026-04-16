@@ -227,7 +227,7 @@ collisions #(
 gameState game_inst (
   .clk(pixclk),
   .rst(rst),
-  .frame_tick(frame_tick),
+  .frame_tick(frame_tick_ungated),
   .fire_trigger(btn[0]),
   .astr_hit(astr_hit),
   .ship_hit(ship_hit),
@@ -285,7 +285,7 @@ drawcon #(
     .on_bullet(on_bullet),
     .on_cursor(on_cursor),
     .on_asteroid(on_asteroid),
-    .blink(bink),
+    .blink(blink),
     .game_state(game_state)
     );
     // Instantiate VGA Module
