@@ -46,6 +46,7 @@ module bulletManager #(
   input clk,
   input rst,
   input frame_tick,
+  input new_game,
 
     // Mouse Input
   input fire_trigger,
@@ -164,6 +165,14 @@ integer j;
 always @(posedge clk) begin
   // Reset Logic
   if (!rst) begin
+    for (j=0; j<MAX_BULLETS; j=j+1) begin
+      bullet_active[j] <= 1'b0;
+      bullet_x[j] <= 11'd0;
+      bullet_y[j] <= 11'd0;
+    end
+    gun_heat_reg <= 8'd0;
+
+  end else if (new_game) begin
     for (j=0; j<MAX_BULLETS; j=j+1) begin
       bullet_active[j] <= 1'b0;
       bullet_x[j] <= 11'd0;

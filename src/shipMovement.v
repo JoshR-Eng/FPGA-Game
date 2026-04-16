@@ -41,6 +41,7 @@ module shipMovement #(
   input clk,
   input rst,
   input frame_tick,
+  input new_game,
 
   // Accelerometer data (from hardware abstraction in top level)
   input [14:0] acl_data,
@@ -116,6 +117,10 @@ always@(posedge clk) begin
     if (!rst) begin
     ship_x_reg <= START_X;
     ship_y_reg <= START_Y;
+    end else if (new_game) begin
+    ship_x_reg <= START_X;
+    ship_y_reg <= START_Y;
+
     end else if (frame_tick) begin
     
     // Y axis (controlled by acl_x)

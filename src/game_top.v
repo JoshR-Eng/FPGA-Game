@@ -143,6 +143,7 @@ shipMovement #(
   ) ship_inst(
   .clk(pixclk),
   .rst(rst),
+  .new_game(new_game),
   .frame_tick(frame_tick),
   .acl_data(acl_data),
   .ship_x(ship_x),
@@ -162,6 +163,7 @@ bulletManager #(
   .clk(pixclk),
   .rst(rst),
   .frame_tick(frame_tick),
+  .new_game(new_game),
   .fire_trigger(btn[0]),
   .btn(btn),
   .curr_x(curr_x),
