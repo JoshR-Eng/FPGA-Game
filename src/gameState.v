@@ -147,7 +147,7 @@ assign blink        = invis_timer[3]; // Toggles every 8 frames
 
 // new game pulse
 reg  [1:0]  game_state_prev;
-always @(posedge pixclk) game_state_prev <= game_state;
+always @(posedge clk) game_state_prev <= game_state;
 assign new_game = (game_state == 2'd1) && (game_state_prev != 2'd1);
 
 
