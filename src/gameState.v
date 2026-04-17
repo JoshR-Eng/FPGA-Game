@@ -51,7 +51,6 @@ reg [15:0] score_reg;
 reg [6:0]  invis_timer;
 reg [1:0]  state_reg;
 
-
 // ==========================================================
 // --- State Encoding 
 // ==========================================================    
@@ -63,6 +62,7 @@ localparam GAME_OVER = 2'd2;
 // Rising edge detection for start_trigger
 reg start_prev;
 wire start_pulse = start_trigger & ~start_prev;
+reg        start_pending;
 
 // ==========================================================
 // --- Game Score Counter
@@ -82,13 +82,18 @@ end
 
 
 always @(posedge clk) begin
+  start_prev <= start_trigger;
   if (!rst) begin
-    health_reg  <= 2'd3;
-    score_reg   <= 16'd0;
-    invis_timer <= 7'd0;
-    state_reg   <= IDLE;
+    health_reg    <= 2'd3;
+    score_reg     <= 16'd0;
+    invis_timer   <= 7'd0;
+    state_reg     <= IDLE;
+    start_pending <= 1'b0;
+  end else if (start_pulse) begin
+    start_pending <= 1'b1;
   end else if (frame_tick) begin
-    start_prev <= start_trigger;
+    start_pending <= 1'b0;
+
     case (state_reg) 
       
 
