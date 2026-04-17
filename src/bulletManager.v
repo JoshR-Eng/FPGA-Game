@@ -37,10 +37,6 @@ module bulletManager #(
       // Ship Size
   parameter SHIP_WIDTH          = 11'd100,
   parameter SHIP_HEIGHT         = 11'd100,
-      // Crosshair
-  parameter CURSOR_ARM          = 8,   // Half-length of each bar
-  parameter CURSOR_THICK        = 1, // Half-width of each bar
-  parameter CURSOR_SPEED        = 10
   )(
     // System
   input clk,
@@ -50,7 +46,8 @@ module bulletManager #(
 
     // Mouse Input
   input fire_trigger,
-  input [4:0] btn, // Temporary use of buttons before mous
+  input [10:0] cursor_x,
+  input [10:0] cursor_y,
 
     // Drawing Position
   input [10:0] curr_x, curr_y,
@@ -60,7 +57,6 @@ module bulletManager #(
 
     // Boolean if curr_x/y is on bullet or cursor
   output reg on_bullet,
-  output on_cursor,
 
     // Bullet Position & State
   input  [15:0]  bul_hit,
@@ -253,59 +249,6 @@ generate
     assign bul_active_packed[k]           = bullet_active[k];
   end
 endgenerate
-
-
-// ==========================================================
-// --- Crosshair 
-// ==========================================================
-
-// Should very soon take this out of the bulletManager module
-// for now I will control direction with the buttons
-// but eventually I want to use the mouse for this
-
-reg [10:0] cursor_x, cursor_y;
-
-assign on_cursor = (
-  // Horizontal bar
-  (curr_x >= (cursor_x - CURSOR_ARM)   ) && (curr_x <= (cursor_x + CURSOR_ARM)   ) &&
-  (curr_y >= (cursor_y - CURSOR_THICK) ) && (curr_y <= (cursor_y + CURSOR_THICK) ) 
-  ||
-  // Vertical bar
-  (curr_x >= (cursor_x - CURSOR_THICK) )  && (curr_x <= (cursor_x + CURSOR_THICK) ) &&
-  (curr_y >= (cursor_y - CURSOR_ARM)   )  && (curr_y <= (cursor_y + CURSOR_ARM)   ) 
-  );
-
-// Crosshair movement
-always @(posedge clk) begin
-  if (!rst) begin
-    cursor_x <= 11'd720;
-    cursor_y <= 11'd440;
-  end else if (frame_tick) begin
-
-    // X axis 
-    if      (btn[2] && cursor_x > (SCREEN_X_MIN + CURSOR_ARM + CURSOR_SPEED))
-        cursor_x <= cursor_x - CURSOR_SPEED;
-    else if (btn[2])
-        cursor_x <= SCREEN_X_MIN + CURSOR_ARM;    // clamp — guarantees cursor_x >= CURSOR_ARM
-    else if (btn[3] && (cursor_x + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_X_MAX)
-        cursor_x <= cursor_x + CURSOR_SPEED;
-    else if (btn[3])
-        cursor_x <= SCREEN_X_MAX - CURSOR_ARM;
-
-    // Y axis 
-    if      (btn[1] && cursor_y > (SCREEN_Y_MIN + CURSOR_ARM + CURSOR_SPEED))
-        cursor_y <= cursor_y - CURSOR_SPEED;
-    else if (btn[1])
-        cursor_y <= SCREEN_Y_MIN + CURSOR_ARM;    // clamp — guarantees cursor_y >= CURSOR_ARM
-    else if (btn[4] && (cursor_y + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_Y_MAX )
-        cursor_y <= cursor_y + CURSOR_SPEED;
-    else if (btn[4])
-        cursor_y <= SCREEN_Y_MAX - CURSOR_ARM;
-
-  end
-end
-
-
 
 
 

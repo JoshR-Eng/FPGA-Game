@@ -64,6 +64,10 @@ wire [10:0] curr_y;
 wire [10:0] ship_x, ship_y;
 wire        ship_hit;
 
+// Crosshair
+wire [10:0] cursor_x;
+wire [10:0] cursor_y;
+
 // Accelerometer data
 wire [14:0] acl_data;
 
@@ -131,6 +135,14 @@ localparam ASTR_SMALL    = 7'd12;
 localparam ASTR_MEDIUM   = 7'd24;
 localparam ASTR_LARGE    = 7'd48;
 
+  // Crosshair Config
+localparam CURSOR_START_X = 11'd720;
+localparam CURSOR_START_Y = 11'd450;
+localparam CURSOR_ARM     = 8,   // Half-length of each bar
+localparam CURSOR_THICK   = 1, // Half-width of each bar
+localparam CURSOR_SPEED   = 10
+
+
 // ==========================================================
 // --- Game Logic Modules
 // ==========================================================
@@ -179,8 +191,9 @@ bulletManager #(
   .curr_y(curr_y),
   .ship_x(ship_x),
   .ship_y(ship_y),
+  .cursor_x(cursor_x),
+  .cursor_y(cursor_y),
   .on_bullet(on_bullet),
-  .on_cursor(on_cursor),
   .bul_x_packed(bul_x_packed),
   .bul_y_packed(bul_y_packed),
   .bul_active_packed(bul_active_packed),
@@ -277,6 +290,27 @@ scoreDisplay score_inst(
   .an(an)
 );
 
+// Crosshair Movement
+crosshairMovement #(
+  .X_MIN(SCREEN_X_MIN),
+  .X_MAX(SCREEN_X_MAX),
+  .Y_MIN(SCREEN_Y_MIN),
+  .Y_MAX(SCREEN_Y_MAX),
+  .START_X(CURSOR_START_X),
+  .START_Y(CURSOR_START_Y),
+  .CURSOR_ARM(CURSOR_ARM),
+  .CURSOR_THICK(CURSOR_THICK),
+  .CURSOR_SPEED(CURSOR_SPEED)
+  ) cursor_inst(
+  .clk(pixclk),
+  .rst(rst),
+  .new_game(new_game),
+  .frame_tick(frame_tick),
+  .cursor_x(cursor_x),
+  .cursor_y(cursor_y),
+  .btn(btn),
+  .on_cursor(on_cursor)
+  );
 
 
 // ==========================================================
