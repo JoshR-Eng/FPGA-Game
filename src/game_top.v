@@ -116,8 +116,10 @@ localparam SHIP_HEIGHT  = 11'd100;
 localparam DEADZONE = 4'd2;
 
   // Bullet config
-localparam  MAX_BULLETS = 16;
-localparam  OVERHEAT_THRESHOLD  = 8'd200;
+localparam MAX_BULLETS         = 16;
+localparam OVERHEAT_THRESHOLD  = 8'd200;
+localparam HEAT_PER_SHOT       = 8'd48,
+localparam COOLDOWN_RATE       = 8'd1,
 
   // Asteroid config
 localparam MAX_ASTEROIDS = 16;
@@ -159,7 +161,9 @@ bulletManager #(
   .SHIP_WIDTH(SHIP_WIDTH),
   .SHIP_HEIGHT(SHIP_HEIGHT),
   .MAX_BULLETS(MAX_BULLETS),
-  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD)
+  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD),
+  .HEAT_PER_SHOT(HEAT_PER_SHOT),
+  .COOLDOWN_RATE(COOLDOWN_RATE)
   ) bullet_inst (
   .clk(pixclk),
   .rst(rst),
