@@ -87,15 +87,15 @@ integer b, a; // Loop counters
 always @(posedge clk) begin
   if (!rst) begin
     // Default 'Hit Flags' to 0
-    bul_hit   = 16'b0;
-    astr_hit  = 16'b0;
-    ship_hit  = 1'b0;
+    bul_hit   <= 16'b0;
+    astr_hit  <= 16'b0;
+    ship_hit  <= 1'b0;
 
   end else if (frame_tick) begin
 
-    bul_hit   = 16'b0;
-    astr_hit  = 16'b0;
-    ship_hit  = 1'b0;
+    bul_hit   <= 16'b0;
+    astr_hit  <= 16'b0;
+    ship_hit  <= 1'b0;
 
     // --- Bullet vs. Asteroid
     for (b=0; b<MAX_BULLETS; b=b+1) begin
@@ -108,8 +108,8 @@ always @(posedge clk) begin
             (bul_y[b] + BULLET_HEIGHT > astr_y[a] - half[a]) &&
             (bul_y[b]                 < astr_y[a] + half[a])) 
         begin
-          bul_hit[b]  = 1'b1;
-          astr_hit[a] = 1'b1;
+          bul_hit[b]  <= 1'b1;
+          astr_hit[a] <= 1'b1;
         end
       end
     end
@@ -123,7 +123,7 @@ always @(posedge clk) begin
           (ship_y + SHIP_HEIGHT > astr_y[a] - half[a]) &&
           (ship_y               < astr_y[a] + half[a]))
       begin
-        ship_hit = 1'b1;
+        ship_hit <= 1'b1;
       end  
     end
   end
