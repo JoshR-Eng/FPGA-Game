@@ -22,10 +22,10 @@
 
 module crosshairMovement #(
     // Screen Size
-  parameter X_MIN = 11'd10,
-  parameter X_MAX = 11'd1430,
-  parameter Y_MIN = 11'd10,
-  parameter Y_MAX = 11'd890,
+  parameter SCREEN_X_MIN = 11'd10,
+  parameter SCREEN_X_MAX = 11'd1430,
+  parameter SCREEN_Y_MIN = 11'd10,
+  parameter SCREEN_Y_MAX = 11'd890,
 
   // Crosshair Starting Position
   parameter START_X = 11'd720,
@@ -43,8 +43,12 @@ module crosshairMovement #(
 
   input [4:0] btn,
 
+  input [10:0] curr_x,
+  input [10:0] curr_y,
+
   output [10:0] cursor_x,
   output [10:0] cursor_y,
+
 
   output on_cursor
 );
@@ -54,7 +58,7 @@ module crosshairMovement #(
 // --- Internal Wiring
 // ==========================================================    
 
-reg [10:0] cursor_x_reg, cursor_y_reg;
+reg [10:0] cursor_x_reg, cursor_y;
 
 
 
@@ -65,29 +69,32 @@ reg [10:0] cursor_x_reg, cursor_y_reg;
 // Crosshair movement
 always @(posedge clk) begin
   if (!rst) begin
-    cursor_x <= 11'd720;
-    cursor_y <= 11'd440;
+    cursor_x_reg <= START_X;
+    cursor_y_reg <= START_Y;
+  end else if (new_game) begin
+    cursor_x_reg <= START_X;
+    cursor_y_reg <= START_Y;
   end else if (frame_tick) begin
 
     // X axis 
-    if      (btn[2] && cursor_x > (SCREEN_X_MIN + CURSOR_ARM + CURSOR_SPEED))
-        cursor_x <= cursor_x - CURSOR_SPEED;
+    if      (btn[2] && cursor_x_reg > (SCREEN_X_MIN + CURSOR_ARM + CURSOR_SPEED))
+        cursor_x_reg <= cursor_x - CURSOR_SPEED;
     else if (btn[2])
-        cursor_x <= SCREEN_X_MIN + CURSOR_ARM;    // clamp — guarantees cursor_x >= CURSOR_ARM
-    else if (btn[3] && (cursor_x + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_X_MAX)
-        cursor_x <= cursor_x + CURSOR_SPEED;
+        cursor_x_reg <= SCREEN_X_MIN + CURSOR_ARM;    // clamp — guarantees cursor_x >= CURSOR_ARM
+    else if (btn[3] && (cursor_x_reg + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_X_MAX)
+        cursor_x_reg <= cursor_x + CURSOR_SPEED;
     else if (btn[3])
-        cursor_x <= SCREEN_X_MAX - CURSOR_ARM;
+        cursor_x_reg <= SCREEN_X_MAX - CURSOR_ARM;
 
     // Y axis 
-    if      (btn[1] && cursor_y > (SCREEN_Y_MIN + CURSOR_ARM + CURSOR_SPEED))
-        cursor_y <= cursor_y - CURSOR_SPEED;
+    if      (btn[1] && cursor_y_reg > (SCREEN_Y_MIN + CURSOR_ARM + CURSOR_SPEED))
+        cursor_y_reg <= cursor_y_reg - CURSOR_SPEED;
     else if (btn[1])
-        cursor_y <= SCREEN_Y_MIN + CURSOR_ARM;    // clamp — guarantees cursor_y >= CURSOR_ARM
-    else if (btn[4] && (cursor_y + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_Y_MAX )
-        cursor_y <= cursor_y + CURSOR_SPEED;
+        cursor_y_reg <= SCREEN_Y_MIN + CURSOR_ARM;    // clamp — guarantees cursor_y_reg >= CURSOR_ARM
+    else if (btn[4] && (cursor_y_reg + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_Y_MAX )
+        cursor_y_reg <= cursor_y_reg + CURSOR_SPEED;
     else if (btn[4])
-        cursor_y <= SCREEN_Y_MAX - CURSOR_ARM;
+        cursor_y_reg <= SCREEN_Y_MAX - CURSOR_ARM;
 
   end
 end
@@ -100,12 +107,12 @@ end
 
 assign on_cursor = (
   // Horizontal bar
-  (curr_x >= (cursor_x - CURSOR_ARM)   ) && (curr_x <= (cursor_x + CURSOR_ARM)   ) &&
-  (curr_y >= (cursor_y - CURSOR_THICK) ) && (curr_y <= (cursor_y + CURSOR_THICK) ) 
+  (curr_x >= (cursor_x_reg - CURSOR_ARM)   ) && (curr_x <= (cursor_x + CURSOR_ARM)   ) &&
+  (curr_y >= (cursor_y_reg - CURSOR_THICK) ) && (curr_y <= (cursor_y_reg + CURSOR_THICK) ) 
   ||
   // Vertical bar
-  (curr_x >= (cursor_x - CURSOR_THICK) )  && (curr_x <= (cursor_x + CURSOR_THICK) ) &&
-  (curr_y >= (cursor_y - CURSOR_ARM)   )  && (curr_y <= (cursor_y + CURSOR_ARM)   ) 
+  (curr_x >= (cursor_x_reg - CURSOR_THICK) )  && (curr_x <= (cursor_x + CURSOR_THICK) ) &&
+  (curr_y >= (cursor_y_reg - CURSOR_ARM)   )  && (curr_y <= (cursor_y_reg + CURSOR_ARM)   ) 
   );
 
 

@@ -36,7 +36,7 @@ module bulletManager #(
   parameter SCREEN_Y_MIN        = 11'd10,
       // Ship Size
   parameter SHIP_WIDTH          = 11'd100,
-  parameter SHIP_HEIGHT         = 11'd100,
+  parameter SHIP_HEIGHT         = 11'd100
   )(
     // System
   input clk,

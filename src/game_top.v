@@ -138,9 +138,9 @@ localparam ASTR_LARGE    = 7'd48;
   // Crosshair Config
 localparam CURSOR_START_X = 11'd720;
 localparam CURSOR_START_Y = 11'd450;
-localparam CURSOR_ARM     = 8,   // Half-length of each bar
-localparam CURSOR_THICK   = 1, // Half-width of each bar
-localparam CURSOR_SPEED   = 10
+localparam CURSOR_ARM     = 8;   // Half-length of each bar
+localparam CURSOR_THICK   = 1;   // Half-width of each bar
+localparam CURSOR_SPEED   = 10;
 
 
 // ==========================================================
@@ -186,7 +186,6 @@ bulletManager #(
   .frame_tick(frame_tick),
   .new_game(new_game),
   .fire_trigger(btn[0]),
-  .btn(btn),
   .curr_x(curr_x),
   .curr_y(curr_y),
   .ship_x(ship_x),
@@ -292,10 +291,10 @@ scoreDisplay score_inst(
 
 // Crosshair Movement
 crosshairMovement #(
-  .X_MIN(SCREEN_X_MIN),
-  .X_MAX(SCREEN_X_MAX),
-  .Y_MIN(SCREEN_Y_MIN),
-  .Y_MAX(SCREEN_Y_MAX),
+  .SCREEN_X_MIN(SCREEN_X_MIN),
+  .SCREEN_X_MAX(SCREEN_X_MAX),
+  .SCREEN_Y_MIN(SCREEN_Y_MIN),
+  .SCREEN_Y_MAX(SCREEN_Y_MAX),
   .START_X(CURSOR_START_X),
   .START_Y(CURSOR_START_Y),
   .CURSOR_ARM(CURSOR_ARM),
@@ -308,6 +307,8 @@ crosshairMovement #(
   .frame_tick(frame_tick),
   .cursor_x(cursor_x),
   .cursor_y(cursor_y),
+  .curr_x(curr_x),
+  .curr_y(curr_y),
   .btn(btn),
   .on_cursor(on_cursor)
   );
