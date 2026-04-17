@@ -275,7 +275,7 @@ scoreDisplay score_inst(
   .d(d), .e(e), .f(f),
   .g(g),
   .an(an)
-)
+);
 
 
 
