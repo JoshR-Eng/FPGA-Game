@@ -58,7 +58,7 @@ module crosshairMovement #(
 // --- Internal Wiring
 // ==========================================================    
 
-reg [10:0] cursor_x_reg, cursor_y;
+reg [10:0] cursor_x_reg, cursor_y_reg;
 
 
 
