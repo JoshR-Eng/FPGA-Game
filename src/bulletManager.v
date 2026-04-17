@@ -115,13 +115,13 @@ wire [11:0] dominant = (abs_dx >= abs_dy) ? abs_dx : abs_dy;
 //      suitable power of 2 to shift by
 reg [3:0] shift_n;
 always @* begin
-  if      (dominant >= 10'd512) shift_n = 4'd8;
-  else if (dominant >= 10'd256) shift_n = 4'd7;
-  else if (dominant >= 10'd128) shift_n = 4'd6;
-  else if (dominant >= 10'd64)  shift_n = 4'd5;
-  else if (dominant >= 10'd32)  shift_n = 4'd4;
-  else if (dominant >= 10'd16)  shift_n = 4'd3;
-  else if (dominant >= 10'd8)   shift_n = 4'd2;
+  if      (dominant_reg >= 10'd512) shift_n = 4'd8;
+  else if (dominant_reg >= 10'd256) shift_n = 4'd7;
+  else if (dominant_reg >= 10'd128) shift_n = 4'd6;
+  else if (dominant_reg >= 10'd64)  shift_n = 4'd5;
+  else if (dominant_reg >= 10'd32)  shift_n = 4'd4;
+  else if (dominant_reg >= 10'd16)  shift_n = 4'd3;
+  else if (dominant_reg >= 10'd8)   shift_n = 4'd2;
   else                          shift_n = 4'd0;
 end
 

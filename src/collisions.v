@@ -72,10 +72,14 @@ wire [10:0] astr_x      [0:MAX_ASTEROIDS-1];
 wire [10:0] astr_y      [0:MAX_ASTEROIDS-1];
 wire        astr_active [0:MAX_ASTEROIDS-1];
 wire [1:0]  astr_size   [0:MAX_ASTEROIDS-1];
-wire [6:0]  half        [0:MAX_ASTEROIDS-1]; // No. of Pixels for astr. half-size 
+reg  [6:0]  half        [0:MAX_ASTEROIDS-1]; // No. of Pixels for astr. half-size 
 
 
-
+integer k;
+always @(posedge clk) begin
+  for (k=0; k<MAX_ASTEROIDS; k=k+1)
+    half[k] <= astr_half_size(astr_size[k]);
+end
 
 
 //==========================================================
@@ -171,9 +175,6 @@ generate
     assign astr_y[j]      = astr_y_packed[(j*11)+10 -: 11] ;
     assign astr_active[j] = astr_active_packed[j] ;
     assign astr_size[j]   = astr_size_packed[(j*2)+1 -: 2];
-
-    // This then takes `astr_size` into pixel size
-    assign half[j]        = astr_half_size(astr_size[j]);
   end
 endgenerate
 
