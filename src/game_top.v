@@ -41,7 +41,11 @@ module game_top(
 
     // Seven-seg display
     output a,b,c,d,e,f,g,
-    output [7:0] an
+    output [7:0] an,
+
+    // Mouse
+    input PS2_CLK,
+    input PS2_DATA
     );
 
 // ==========================================================
@@ -331,7 +335,7 @@ crosshairMovement #(
 
 
 // ==========================================================
-// --- Accelerometer
+// --- Hardware 
 // ==========================================================
 
 // Accelerometer SPI Interface
@@ -344,6 +348,21 @@ accOutput accel_inst (
   .acl_data(acl_data)  // {X[14:10], Y[9:5], Z[4:0]}
 );
 
+// Mouse PS/2 Interface
+mouse mouse_inst (
+    .clk        (clk),          // 100 MHz system clock — NOT pixclk
+    .rst        (rst),
+    .mouse_clk  (PS2_CLK),
+    .mouse_data (PS2_DATA),
+    .x_pos      (mouse_dx),
+    .y_pos      (mouse_dy),
+    .x_sign     (mouse_x_sign),
+    .y_sign     (mouse_y_sign),
+    .left_btn   (left_btn),
+    .right_btn  (right_btn),
+    .o_valid    (mouse_valid),
+    .middle_btn ()              // unconnected — leave open
+);
 
 
 // ==========================================================

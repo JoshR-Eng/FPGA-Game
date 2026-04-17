@@ -31,7 +31,8 @@ module mouse(
     output x_sign, y_sign,         // Sign of the X & Y Position
     output       left_btn,         // Left button state
     output       right_btn,        // Right button state
-    output       middle_btn        // Middle button state
+    output       middle_btn,       // Middle button state
+    output       o_valid
     );
     
     // --- Internal registers --------------------------------------
@@ -43,11 +44,11 @@ module mouse(
     // Note: PS/2 sends LSB first, so we reverse the bits when extracting
     assign x_pos      = signal2;
     assign y_pos      = signal3;
-    assign x_sign     = signal1[3];  // Bit 4 of status byte
-    assign y_sign     = signal1[2];  // Bit 5 of status byte
-    assign left_btn   = signal1[7]; // Bit 0 of status byte
-    assign right_btn  = signal1[6]; // Bit 1 of status byte
-    assign middle_btn = signal1[5]; // Bit 2 of status byte 
+    assign x_sign     = signal1[3];
+    assign y_sign     = signal1[2];
+    assign left_btn   = signal1[7];
+    assign right_btn  = signal1[6];
+    assign middle_btn = signal1[5];
     
     
     // --- Signal Processing ---------------------------------------
@@ -59,9 +60,9 @@ module mouse(
     reg         ack;
     wire        PS2Clk_negedge;
     
-    assign word1 = fifo[33 +: 11];
-    assign word2 = fifo[22 +: 11];
-    assign word3 = fifo[11 +: 11];
+    assign word1 = fifo[32 +: 11];
+    assign word2 = fifo[21 +: 11];
+    assign word3 = fifo[10 +: 11];
     
     assign PS2Clk_negedge = (PS2Clk_sync == 2'b10);
     
