@@ -104,7 +104,14 @@ wire [7:0]  gun_heat;
 wire [1:0] difficulty;
 assign difficulty = sw[1:0];
 
-
+// Mouse
+wire [7:0]  mouse_dx;
+wire [7:0]  mouse_dy;
+wire        mouse_x_sign;
+wire        mouse_y_sign;
+wire        mouse_valid;
+wire        left_btn;
+wire        right_btn;
 
 // ==========================================================
 // --- CONFIGURATION
@@ -189,7 +196,7 @@ bulletManager #(
   .rst(rst),
   .frame_tick(frame_tick),
   .new_game(new_game),
-  .fire_trigger(btn[0]),
+  .fire_trigger(left_btn),
   .curr_x(curr_x),
   .curr_y(curr_y),
   .ship_x(ship_x),
@@ -259,7 +266,7 @@ gameState game_inst (
   .clk(pixclk),
   .rst(rst),
   .frame_tick(frame_tick_ungated),
-  .fire_trigger(btn[0]),
+  .fire_trigger(right_btn),
   .astr_hit(astr_hit),
   .ship_hit(ship_hit),
   .health(health),

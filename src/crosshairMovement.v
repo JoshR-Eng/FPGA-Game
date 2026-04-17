@@ -78,11 +78,11 @@ always @(posedge clk) begin
 
     // X axis 
     if      (btn[2] && cursor_x_reg > (SCREEN_X_MIN + CURSOR_ARM + CURSOR_SPEED))
-        cursor_x_reg <= cursor_x - CURSOR_SPEED;
+        cursor_x_reg <= cursor_x_reg - CURSOR_SPEED;
     else if (btn[2])
         cursor_x_reg <= SCREEN_X_MIN + CURSOR_ARM;    // clamp — guarantees cursor_x >= CURSOR_ARM
     else if (btn[3] && (cursor_x_reg + CURSOR_ARM + CURSOR_SPEED) <= SCREEN_X_MAX)
-        cursor_x_reg <= cursor_x + CURSOR_SPEED;
+        cursor_x_reg <= cursor_x_reg + CURSOR_SPEED;
     else if (btn[3])
         cursor_x_reg <= SCREEN_X_MAX - CURSOR_ARM;
 
@@ -107,11 +107,11 @@ end
 
 assign on_cursor = (
   // Horizontal bar
-  (curr_x >= (cursor_x_reg - CURSOR_ARM)   ) && (curr_x <= (cursor_x + CURSOR_ARM)   ) &&
+  (curr_x >= (cursor_x_reg - CURSOR_ARM)   ) && (curr_x <= (cursor_x_reg + CURSOR_ARM)   ) &&
   (curr_y >= (cursor_y_reg - CURSOR_THICK) ) && (curr_y <= (cursor_y_reg + CURSOR_THICK) ) 
   ||
   // Vertical bar
-  (curr_x >= (cursor_x_reg - CURSOR_THICK) )  && (curr_x <= (cursor_x + CURSOR_THICK) ) &&
+  (curr_x >= (cursor_x_reg - CURSOR_THICK) )  && (curr_x <= (cursor_x_reg + CURSOR_THICK) ) &&
   (curr_y >= (cursor_y_reg - CURSOR_ARM)   )  && (curr_y <= (cursor_y_reg + CURSOR_ARM)   ) 
   );
 
