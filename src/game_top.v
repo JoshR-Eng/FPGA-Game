@@ -37,7 +37,11 @@ module game_top(
     output ACL_CSN,
 
     // LED
-    output [15:0] LED
+    output [15:0] LED,
+
+    // Seven-seg display
+    output a,b,c,d,e,f,g,
+    output [7:0] an
     );
 
 // ==========================================================
@@ -250,7 +254,6 @@ gameState game_inst (
   .new_game(new_game)
 );
 
-
 // Heat Display
 heatDisplay #(
   .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD),
@@ -262,6 +265,19 @@ heatDisplay #(
   .gun_heat(gun_heat),
   .LED(LED)
 );
+
+// Score Display on Seven-seg Display
+scoreDisplay score_inst(
+  .clk(pixclk),
+  .score(score),
+  .health(health),
+  .a(a), .b(b), .c(c),
+  .d(d), .e(e), .f(f),
+  .g(g),
+  .an(an)
+)
+
+
 
 // ==========================================================
 // --- Clock Generators

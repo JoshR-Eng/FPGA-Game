@@ -23,10 +23,9 @@
 module scoreDisplay(
     // System
     input clk, 
-    input rst,
 
     // Display Value
-    input [16:0] score, 
+    input [15:0] score, 
     input [1:0]  health,
 
     // Seven-seg Pin
@@ -40,7 +39,7 @@ module scoreDisplay(
     wire led_clk;
     
     reg [3:0] dig_sel;
-    reg [16:0] clk_count = 11'd0;
+    reg [16:0] clk_count = 17'd0;
     
 // ==========================================================
 // --- Ring Counter 
