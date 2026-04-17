@@ -118,8 +118,8 @@ localparam DEADZONE = 4'd2;
   // Bullet config
 localparam MAX_BULLETS         = 16;
 localparam OVERHEAT_THRESHOLD  = 8'd200;
-localparam HEAT_PER_SHOT       = 8'd48,
-localparam COOLDOWN_RATE       = 8'd1,
+localparam HEAT_PER_SHOT       = 8'd48;
+localparam COOLDOWN_RATE       = 8'd1;
 
   // Asteroid config
 localparam MAX_ASTEROIDS = 16;
