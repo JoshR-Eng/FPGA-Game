@@ -60,9 +60,9 @@ module mouse(
     reg         ack;
     wire        PS2Clk_negedge;
     
-    assign word1 = fifo[32 +: 11];
-    assign word2 = fifo[21 +: 11];
-    assign word3 = fifo[10 +: 11];
+    assign word1 = fifo[32 -: 11];
+    assign word2 = fifo[21 -: 11];
+    assign word3 = fifo[10 -: 11];
     
     assign PS2Clk_negedge = (PS2Clk_sync == 2'b10);
     

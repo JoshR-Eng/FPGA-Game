@@ -266,7 +266,7 @@ gameState game_inst (
   .clk(pixclk),
   .rst(rst),
   .frame_tick(frame_tick_ungated),
-  .fire_trigger(right_btn),
+  .start_trigger(right_btn),
   .astr_hit(astr_hit),
   .ship_hit(ship_hit),
   .health(health),

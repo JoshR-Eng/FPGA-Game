@@ -26,7 +26,7 @@ module gameState #(
   input clk,
   input rst,
   input frame_tick,
-  input fire_trigger,
+  input start_trigger,
 
     // Hit Flags
   input [15:0] astr_hit,
@@ -60,9 +60,9 @@ localparam IDLE      = 2'd0;
 localparam PLAYING   = 2'd1;
 localparam GAME_OVER = 2'd2;
 
-// Rising edge detection for fire_trigger
-reg fire_prev;
-wire fire_pulse = fire_trigger & ~fire_prev;
+// Rising edge detection for start_trigger
+reg start_prev;
+wire start_pulse = start_trigger & ~start_prev;
 
 // ==========================================================
 // --- Game Score Counter
@@ -88,13 +88,13 @@ always @(posedge clk) begin
     invis_timer <= 7'd0;
     state_reg   <= IDLE;
   end else if (frame_tick) begin
-    fire_prev <= fire_trigger;
+    start_prev <= start_trigger;
     case (state_reg) 
       
 
       // IDLE STATE
       IDLE: begin
-        if (fire_pulse) begin
+        if (start_pulse) begin
           state_reg <= PLAYING;
           invis_timer <= 7'd60;
         end
@@ -125,7 +125,7 @@ always @(posedge clk) begin
 
       // GAME OVER STATE
       GAME_OVER: begin 
-        if (fire_pulse) begin
+        if (start_pulse) begin
           state_reg <= IDLE;
           health_reg <= 2'd3;      // restore lives
           score_reg  <= 16'd0;     // reset score
