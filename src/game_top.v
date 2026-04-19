@@ -41,12 +41,12 @@ module game_top(
 
     // Seven-seg display
     output a,b,c,d,e,f,g,
-    output [7:0] an,
+    output [7:0] an
 
     // Mouse
 //    input PS2_CLK,
 //    input PS2_DATA
-//    );
+    );
 
 // ==========================================================
 // --- Internal Wiring
