@@ -44,8 +44,8 @@ module game_top(
     output [7:0] an,
 
     // Mouse
-    input PS2_CLK,
-    input PS2_DATA
+//    input PS2_CLK,
+//    input PS2_DATA
     );
 
 // ==========================================================
@@ -105,13 +105,13 @@ wire [1:0] difficulty;
 assign difficulty = sw[1:0];
 
 // Mouse
-wire [7:0]  mouse_dx;
-wire [7:0]  mouse_dy;
-wire        mouse_x_sign;
-wire        mouse_y_sign;
-wire        mouse_valid;
-wire        left_btn;
-wire        right_btn;
+//wire [7:0]  mouse_dx;
+//wire [7:0]  mouse_dy;
+//wire        mouse_x_sign;
+//wire        mouse_y_sign;
+//wire        mouse_valid;
+//wire        left_btn;
+//wire        right_btn;
 
 // ==========================================================
 // --- CONFIGURATION
@@ -161,15 +161,15 @@ localparam CURSOR_SPEED   = 10;
 // mouse.v uses 100 MHz but other modules use the 106 MHz pixclk
 // hence, the values must synchronise into pixclk domain
 
-reg left_btn_s1, left_btn_s2;
-reg right_btn_s1, right_btn_s2;
+//reg left_btn_s1, left_btn_s2;
+//reg right_btn_s1, right_btn_s2;
 
-always @(posedge pixclk) begin
-  left_btn_s1  <= left_btn;
-  left_btn_s2  <= left_btn_s1;
-  right_btn_s1 <= right_btn;
-  right_btn_s2 <= right_btn_s1;
-end
+//always @(posedge pixclk) begin
+//  left_btn_s1  <= left_btn;
+//  left_btn_s2  <= left_btn_s1;
+//  right_btn_s1 <= right_btn;
+//  right_btn_s2 <= right_btn_s1;
+//end
 
 // ==========================================================
 // --- Game Logic Modules
@@ -213,7 +213,7 @@ bulletManager #(
   .rst(rst),
   .frame_tick(frame_tick),
   .new_game(new_game),
-  .fire_trigger(left_btn_s2),
+  .fire_trigger(btn[0]),
   .curr_x(curr_x),
   .curr_y(curr_y),
   .ship_x(ship_x),
@@ -283,7 +283,7 @@ gameState game_inst (
   .clk(pixclk),
   .rst(rst),
   .frame_tick(frame_tick_ungated),
-  .start_trigger(right_btn_s2),
+  .start_trigger(btn[1]),
   .astr_hit(astr_hit),
   .ship_hit(ship_hit),
   .health(health),
