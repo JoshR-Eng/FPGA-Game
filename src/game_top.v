@@ -373,21 +373,21 @@ accOutput accel_inst (
 );
 
 // Mouse PS/2 Interface
-mouse mouse_inst (
-    .clk        (clk),          // 100 MHz system clock — NOT pixclk
-    .rst        (rst),
-    .mouse_clk  (PS2_CLK),
-    .mouse_data (PS2_DATA),
-    .x_pos      (mouse_dx),
-    .y_pos      (mouse_dy),
-    .x_sign     (mouse_x_sign),
-    .y_sign     (mouse_y_sign),
-    .left_btn   (left_btn),
-    .right_btn  (right_btn),
-    .o_valid    (mouse_valid),
-    .middle_btn ()              // unconnected — leave open
-);
-
+// mouse mouse_inst (
+//     .clk        (clk),          // 100 MHz system clock — NOT pixclk
+//     .rst        (rst),
+//     .mouse_clk  (PS2_CLK),
+//     .mouse_data (PS2_DATA),
+//     .x_pos      (mouse_dx),
+//     .y_pos      (mouse_dy),
+//     .x_sign     (mouse_x_sign),
+//     .y_sign     (mouse_y_sign),
+//     .left_btn   (left_btn),
+//     .right_btn  (right_btn),
+//     .o_valid    (mouse_valid),
+//     .middle_btn ()              // unconnected — leave open
+// );
+//
 
 // ==========================================================
 // --- Display Logic
