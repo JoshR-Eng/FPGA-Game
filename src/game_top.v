@@ -46,7 +46,7 @@ module game_top(
     // Mouse
 //    input PS2_CLK,
 //    input PS2_DATA
-    );
+//    );
 
 // ==========================================================
 // --- Internal Wiring
