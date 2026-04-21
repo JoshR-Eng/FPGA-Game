@@ -29,8 +29,8 @@ module gameState #(
   input start_trigger,
 
     // Hit Flags
-  input [15:0] astr_hit,
   input        ship_hit,
+  input [15:0] astr_active_packed,
 
     // Game State logic
   output [1:0]  health,
@@ -64,6 +64,10 @@ reg start_prev;
 wire start_pulse = start_trigger & ~start_prev;
 reg        start_pending;
 
+// Falling edge detectino for score
+reg   [15:0] astr_active_prev;
+wire  [15:0] astr_deactivated = astr_active_prev & ~astr_active_packed; 
+
 // ==========================================================
 // --- Game Score Counter
 // ==========================================================  
@@ -73,7 +77,7 @@ reg [4:0] hit_count;
 always @* begin
   hit_count = 5'd0;
   for (i=0; i<16; i=i+1)
-    hit_count = hit_count + astr_hit[i];
+    hit_count = hit_count + astr_deactivated[i];
 end
 
 // ==========================================================
@@ -84,15 +88,17 @@ end
 always @(posedge clk) begin
   start_prev <= start_trigger;
   if (!rst) begin
-    health_reg    <= 2'd3;
-    score_reg     <= 16'd0;
-    invis_timer   <= 7'd0;
-    state_reg     <= IDLE;
-    start_pending <= 1'b0;
+    health_reg        <= 2'd3;
+    score_reg         <= 16'd0;
+    invis_timer       <= 7'd0;
+    state_reg         <= IDLE;
+    start_pending     <= 1'b0;
+    astr_active_prev  <= 16'b0;
   end else if (start_pulse) begin
     start_pending <= 1'b1;
   end else if (frame_tick) begin
-    start_pending <= 1'b0;
+    start_pending     <= 1'b0;
+    astr_active_prev  <= astr_active_packed;
 
     case (state_reg) 
       

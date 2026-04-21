@@ -284,7 +284,7 @@ gameState game_inst (
   .rst(rst),
   .frame_tick(frame_tick_ungated),
   .start_trigger(btn[1]),
-  .astr_hit(astr_hit),
+  .astr_active_packed(astr_active_packed),
   .ship_hit(ship_hit),
   .health(health),
   .score(score),
