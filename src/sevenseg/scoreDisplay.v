@@ -56,7 +56,7 @@ module scoreDisplay(
     reg [7:0] led_strobe = 8'b11111110;
     always @(posedge led_clk)
         led_strobe <= {led_strobe[6:0],led_strobe[7]};
-    assign an = led_strobe;
+    assign an = led_strobe | 8'd0111_0000; // turn off an[6:4]
     
     // Index Counter
     //  Acts as pointer to identify which one is on
