@@ -99,7 +99,7 @@ always @(posedge clk) begin
 
       // IDLE STATE
       IDLE: begin
-        if (start_pulse) begin
+        if (start_pending) begin
           state_reg <= PLAYING;
           invis_timer <= 7'd60;
         end
@@ -130,7 +130,7 @@ always @(posedge clk) begin
 
       // GAME OVER STATE
       GAME_OVER: begin 
-        if (start_pulse) begin
+        if (start_pending) begin
           state_reg <= IDLE;
           health_reg <= 2'd3;      // restore lives
           score_reg  <= 16'd0;     // reset score
