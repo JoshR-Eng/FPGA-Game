@@ -115,6 +115,7 @@ always @* begin
   hit_astr_lx   = 0;
   hit_astr_ly   = 0;
   for (a=0; a<16; a=a+1) begin
+  end
   // if (on_asteroid) begin
   //   mux_r = 4'hA;
   //   mux_g = 4'hA;
@@ -185,12 +186,71 @@ end
 // --- Block Memory Assignment 
 // ==========================================================
 
-blk_mem_gen_0 inst
+//blk_mem_gen_0 inst
+//(
+//.clka(clk),
+//.addra(addr),
+//.douta(rom_pixel)
+//);
+
+// --- Title Sprite
+blk_mem_gen_0 title_sprite
 (
 .clka(clk),
 .addra(addr),
 .douta(rom_pixel)
 );
+
+// --- Ship Sprite
+blk_mem_gen_1 ship_sprite
+(
+.clka(clk),
+.addra(addr),
+.douta(rom_pixel)
+);
+
+// --- Asteroid Sprites
+// Large
+blk_mem_gen_2 astr_large_sprite
+(
+.clka(clk),
+.addra(addr),
+.douta(rom_pixel)
+);
+
+// Medium
+blk_mem_gen_3 astr_med_sprite
+(
+.clka(clk),
+.addra(addr),
+.douta(rom_pixel)
+);
+
+// Small
+blk_mem_gen_4 astr_small_sprite
+(
+.clka(clk),
+.addra(addr),
+.douta(rom_pixel)
+);
+
+
+// --- Game Over Sprite
+blk_mem_gen_5 game_over_sprite
+(
+.clka(clk),
+.addra(addr),
+.douta(rom_pixel)
+);
+
+// --- Info Bar Sprite
+blk_mem_gen_6 info_sprite
+(
+.clka(clk),
+.addra(addr),
+.douta(rom_pixel)
+);
+
 
 /*
 * Need to add the memory blocks for all the sprites
