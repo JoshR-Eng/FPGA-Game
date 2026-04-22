@@ -174,14 +174,6 @@ always @(posedge clk) twinkle_ctr <= twinkle_ctr + 1;
 // Each star blinks independently — XOR index with counter phase
 // star i is ON when twinkle_ctr[25:23] != i[2:0]  (simple phase stagger)
 
-// In the draw always @* block, Layer 0.5 (after background, before asteroids):
-for (s = 0; s < STAR_COUNT; s = s+1) begin
-    if (curr_x == star_x[s] && curr_y == star_y[s]) begin
-        if (twinkle_ctr[25:23] != s[2:0]) begin  // staggered off-phase
-            mux_r = 4'hF; mux_g = 4'hF; mux_b = 4'hF;
-        end
-    end
-end
 
 
 // ==========================================================
@@ -250,6 +242,16 @@ wire [12:0] astr_pixel_sel = (hit_astr_size_d == 2'd2) ? astr_lg_pixel :
 always @* begin
     // Layer 0: Background
     mux_r = 4'h0; mux_g = 4'h0; mux_b = 4'h1;
+    
+    // Layer 0.5: Stars on background
+    for (s = 0; s < STAR_COUNT; s = s+1) begin
+        if (curr_x == star_x[s] && curr_y == star_y[s]) begin
+            if (twinkle_ctr[25:23] != s[2:0]) begin  // staggered off-phase
+                mux_r = 4'hF; mux_g = 4'hF; mux_b = 4'hF;
+            end
+        end
+    end
+
 
     // Layer 1: Asteroids
     if (astr_draw_hit_d && !astr_pixel_sel[12]) begin
