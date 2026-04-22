@@ -146,11 +146,11 @@ assign on_gamebar = (curr_y < SCREEN_Y_MIN);  // strictly less than
 // Heart positions: right zone of info bar (x = 1024–1439, y = 0–99)
 // Space 3 hearts evenly across 416px — centres at x=1090, 1230, 1370
 localparam HEART_Y0 = 25;   // top of heart within bar
-wire heart_on_0 = (curr_x >= 1065) && (curr_x < 1115) &&
+wire heart_on_0 = (curr_x >= 1050) && (curr_x < 1100) &&
                   (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
-wire heart_on_1 = (curr_x >= 1195) && (curr_x < 1245) &&
+wire heart_on_1 = (curr_x >= 1115) && (curr_x < 1165) &&
                   (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
-wire heart_on_2 = (curr_x >= 1325) && (curr_x < 1375) &&
+wire heart_on_2 = (curr_x >= 1180) && (curr_x < 1230) &&
                   (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
 wire any_heart_on = heart_on_0 | heart_on_1 | heart_on_2;
 
@@ -348,11 +348,11 @@ always @(posedge clk) begin
 
     // Heart address (all 3 hearts share the same 50×50 ROM)
     if (heart_on_0)
-        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1065);
+        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1050);
     else if (heart_on_1)
-        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1195);
+        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1115);
     else if (heart_on_2)
-        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1325);
+        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1180);
     else
         heart_addr <= 12'd0;
 end
