@@ -286,6 +286,7 @@ gameState game_inst (
   .start_trigger(btn[1]),
   .astr_active_packed(astr_active_packed),
   .ship_hit(ship_hit),
+  .astr_hit(astr_hit),
   .health(health),
   .score(score),
   .blink(blink),
