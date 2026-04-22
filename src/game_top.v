@@ -395,18 +395,30 @@ accOutput accel_inst (
 
     // Instantiate Drawcon Module
 drawcon #(
-  .SCREEN_Y_MIN(SCREEN_Y_MIN)
-) drawcon_inst(
-    .clk(pixclk), .rst(rst),
-    .ship_x(ship_x), .ship_y(ship_y),
-    .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
-    .curr_x(curr_x), .curr_y(curr_y),
-    .on_bullet(on_bullet),
-    .on_cursor(on_cursor),
-    .on_asteroid(on_asteroid),
-    .blink(blink),
-    .game_state(game_state)
-    );
+  .SCREEN_Y_MIN(SCREEN_Y_MIN),
+  .MAX_ASTEROIDS(MAX_ASTEROIDS),
+  .ASTR_SMALL(ASTR_SMALL),
+  .ASTR_MEDIUM(ASTR_MEDIUM),
+  .ASTR_LARGE(ASTR_LARGE)
+  ) drawcon_inst(
+  .clk(pixclk), .rst(rst),
+  .ship_x(ship_x), .ship_y(ship_y),
+  .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),
+  .curr_x(curr_x), .curr_y(curr_y),
+  .on_bullet(on_bullet),
+  .on_cursor(on_cursor),
+  .on_asteroid(on_asteroid),
+  .astr_x_packed(astr_x_packed),       
+  .astr_y_packed(astr_y_packed),       
+  .astr_active_packed(astr_active_packed), 
+  .astr_size_packed(astr_size_packed), 
+  .health(health),                     
+  .score(score),                       
+  .blink(blink),
+  .game_state(game_state)    
+  );
+
+
     // Instantiate VGA Module
 vga vga_inst(
     .draw_r(draw_r), .draw_g(draw_g), .draw_b(draw_b),

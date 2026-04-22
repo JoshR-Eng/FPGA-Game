@@ -21,19 +21,36 @@
 
 
 module drawcon #(
-    parameter SHIP_WIDTH = 100,
-    parameter SHIP_HEIGHT = 100,
-    parameter SCREEN_Y_MIN = 11'd100
+      // Ship config
+    parameter SHIP_WIDTH    = 100,
+    parameter SHIP_HEIGHT   = 100,
+      // Screen
+    parameter SCREEN_Y_MIN  = 11'd100,
+      // Asteroids
+    parameter MAX_ASTEROIDS = 16,
+    parameter ASTR_SMALL    = 12,
+    parameter ASTR_MEDIUM   = 24,
+    parameter ASTR_LARGE    = 48,
+      // Other Sprites
+    parameter TITLE_W       = 360,
+    parameter TITLE_H       = 180,
+    parameter GAMEOVER_W    = 300,
+    parameter GAMEOVER_H    = 200
     )(
     input clk, rst,
-    input on_bullet,
-    input on_cursor,
-    input on_asteroid,
+    input on_bullet, on_cursor, on_asteroid,
     input blink,
-    input [1:0] game_state,
+    input [1:0]  game_state,
     input [10:0] curr_x, curr_y,
     input [10:0] ship_x, ship_y,
-    output [3:0] draw_r, draw_g, draw_b
+    // NEW
+    input [175:0] astr_x_packed,
+    input [175:0] astr_y_packed,
+    input [15:0]  astr_active_packed,
+    input [31:0]  astr_size_packed,
+    input [1:0]   health,
+    input [15:0]  score,
+    output [3:0]  draw_r, draw_g, draw_b
     );
     
 
@@ -44,21 +61,31 @@ module drawcon #(
 reg [3:0] blk_r = 0, blk_g = 0, blk_b = 0;  // Initialize at power-up
 reg [3:0] bg_r=4'h0, bg_g=4'h0, bg_b=4'h0;
 
-// Signals for the ship image
-reg [13:0] addr = 0;  // Initialize at power-up to prevent garbage
-wire [11:0] rom_pixel;
-
-
 // Object Detection
 wire ship_on;
 reg ship_on_delay;
 wire on_gamebar;
-integer i;
 
 // Draw Multiplexer
 reg [3:0] mux_r;
 reg [3:0] mux_g;
 reg [3:0] mux_b;
+
+// Signals for the ship image
+reg [13:0] addr = 0;  // Initialize at power-up to prevent garbage
+wire [11:0] rom_pixel;
+
+// Asteroid
+wire [10:0] astr_x      [0:15];
+wire [10:0] astr_y      [0:15];
+wire        astr_active [0:15];
+wire        astr_size   [0:15];
+reg  [1:0]  hit_astr_size;
+reg  [10:0] hit_astr_lx, hit_astr_ly;
+reg         astr_draw_hit;
+
+// Loop counters
+integer a, i;
 
 // ==========================================================
 // --- Determine if current pixel is over an item
@@ -75,41 +102,47 @@ assign on_gamebar = (curr_y <= SCREEN_Y_MIN);
 // ==========================================================
 
 always @* begin
-  // Default: BACKGROUND
+
+  // --- Layer 0: BACKGROUND --------------------------------
   //  Standard black space background
   mux_r = 4'h0;
   mux_g = 4'h0;
   mux_b = 4'h1;
 
-  // Layer 1: ASTEROIDS (grey)
-  if (on_asteroid) begin
-    mux_r = 4'hA;
-    mux_g = 4'hA;
-    mux_b = 4'hA;
-  end
+  // --- Layer 1: ASTEROIDS ---------------------------------
+  astr_draw_hit = 0;
+  hit_astr_size = 0;
+  hit_astr_lx   = 0;
+  hit_astr_ly   = 0;
+  for (a=0; a<16; a=a+1) begin
+  // if (on_asteroid) begin
+  //   mux_r = 4'hA;
+  //   mux_g = 4'hA;
+  //   mux_b = 4'hA;
+  // end
 
-  // Layer 2: BULLET (red)
+  // --- Layer 2: BULLET ------------------------------------
   if (on_bullet) begin
     mux_r = 4'hF;
     mux_g = 4'h0;
     mux_b = 4'h0;
   end
 
-  // Layer 3: SHIP
+  // --- Layer 3: SHIP --------------------------------------
   if (ship_on_delay && (rom_pixel[11:0] != 12'h000) && !blink) begin
       mux_r = rom_pixel[11:8];
       mux_g = rom_pixel[7:4];
       mux_b = rom_pixel[3:0];
   end
   
-  // Layer 4: Crosshair
+  // --- Layer 4: Crosshair ---------------------------------
   if (on_cursor) begin
     mux_r = 4'hF;
     mux_g = 4'hF;
     mux_b = 4'hF;
   end
 
-  // Layer 5: Gamebar
+  // --- Layer 5: Gamebar -----------------------------------
   if (on_gamebar) begin
     case (game_state)
       2'd0: begin mux_r = 4'h0; mux_g = 4'h0; mux_b = 4'hF; end  // IDLE — blue
@@ -158,6 +191,33 @@ blk_mem_gen_0 inst
 .addra(addr),
 .douta(rom_pixel)
 );
+
+/*
+* Need to add the memory blocks for all the sprites
+*   - New Ship coe
+*   - Asteroids:
+*       > large
+*       > Medium
+*       > small
+*   - Title
+*   - Game Over
+*/
+
+//==========================================================
+// --- Unflatten Arrays 
+//==========================================================
+
+// --- Asteroid Arrays
+genvar j;
+generate
+  for (j=0; j<MAX_ASTEROIDS; j=j+1) begin : unflatten_asteroids
+    assign astr_x[j]      = astr_x_packed[(j*11)+10 -: 11] ;
+    assign astr_y[j]      = astr_y_packed[(j*11)+10 -: 11] ;
+    assign astr_active[j] = astr_active_packed[j] ;
+    assign astr_size[j]   = astr_size_packed[(j*2)+1 -: 2];
+  end
+endgenerate
+
 
 
 endmodule
