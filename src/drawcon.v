@@ -79,7 +79,7 @@ reg  [10:0] hit_astr_lx, hit_astr_ly;
 reg         astr_draw_hit;
 
 // Loop counters
-integer a, i;
+integer a, i, s;
 
 // --- BRAM wires
 // Ship
@@ -154,6 +154,34 @@ wire heart_on_2 = (curr_x >= 1180) && (curr_x < 1230) &&
                   (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
 wire any_heart_on = heart_on_0 | heart_on_1 | heart_on_2;
 
+
+
+// ==========================================================
+// --- Stars for the background 
+// ==========================================================
+// --- Star coordinates (compile-time constants, 64 stars)
+// These were generated offline and are fixed at synthesis
+localparam STAR_COUNT = 64;
+// Packed arrays: [STAR_COUNT-1:0][10:0]
+// x coords range: 0–1439, y range: 100–899 (game area only)
+reg [10:0] star_x [0:STAR_COUNT-1];
+reg [10:0] star_y [0:STAR_COUNT-1];
+
+// Twinkle: 27-bit free counter → upper bits give ~1Hz tick
+reg [26:0] twinkle_ctr;
+always @(posedge clk) twinkle_ctr <= twinkle_ctr + 1;
+
+// Each star blinks independently — XOR index with counter phase
+// star i is ON when twinkle_ctr[25:23] != i[2:0]  (simple phase stagger)
+
+// In the draw always @* block, Layer 0.5 (after background, before asteroids):
+for (s = 0; s < STAR_COUNT; s = s+1) begin
+    if (curr_x == star_x[s] && curr_y == star_y[s]) begin
+        if (twinkle_ctr[25:23] != s[2:0]) begin  // staggered off-phase
+            mux_r = 4'hF; mux_g = 4'hF; mux_b = 4'hF;
+        end
+    end
+end
 
 
 // ==========================================================
