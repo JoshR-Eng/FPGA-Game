@@ -175,6 +175,8 @@ always @* begin
                         curr_x <  astr_x[a] + ASTR_SMALL  &&
                         curr_y >= astr_y[a] - ASTR_SMALL  && 
                         curr_y <  astr_y[a] + ASTR_SMALL  ) begin
+                        astr_draw_hit = 1'b1; 
+                        hit_astr_size = astr_size[a];
                         hit_astr_lx   = curr_x - (astr_x[a] - ASTR_SMALL);
                         hit_astr_ly   = curr_y - (astr_y[a] - ASTR_SMALL);
                     end
@@ -184,6 +186,8 @@ always @* begin
                         curr_x <  astr_x[a] + ASTR_MEDIUM &&
                         curr_y >= astr_y[a] - ASTR_MEDIUM && 
                         curr_y <  astr_y[a] + ASTR_MEDIUM ) begin
+                        astr_draw_hit = 1'b1; 
+                        hit_astr_size = astr_size[a];
                         hit_astr_lx   = curr_x - (astr_x[a] - ASTR_MEDIUM);
                         hit_astr_ly   = curr_y - (astr_y[a] - ASTR_MEDIUM);
                     end
@@ -193,6 +197,8 @@ always @* begin
                         curr_x <  astr_x[a] + ASTR_LARGE  &&
                         curr_y >= astr_y[a] - ASTR_LARGE  && 
                         curr_y <  astr_y[a] + ASTR_LARGE  ) begin
+                        astr_draw_hit = 1'b1; 
+                        hit_astr_size = astr_size[a];
                         hit_astr_lx   = curr_x - (astr_x[a] - ASTR_LARGE);
                         hit_astr_ly   = curr_y - (astr_y[a] - ASTR_LARGE);
                     end
