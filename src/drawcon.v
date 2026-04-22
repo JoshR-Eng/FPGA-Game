@@ -62,7 +62,6 @@ reg [3:0] bg_r=4'h0, bg_g=4'h0, bg_b=4'h0;
 
 // Object Detection
 wire ship_on;
-reg ship_on_delay;
 wire on_gamebar;
 
 // Draw Multiplexer
@@ -140,6 +139,7 @@ wire gameover_on = (game_state == 2'd2) &&
 
 // --- INFO BAR ---------------------------------------------
 wire infobar_on  = (curr_y < 11'd100) && (curr_x < 11'd1024);
+assign on_gamebar = (curr_y < SCREEN_Y_MIN);  // strictly less than
 
 
 // --- HEARTS -----------------------------------------------
@@ -162,7 +162,6 @@ wire any_heart_on = heart_on_0 | heart_on_1 | heart_on_2;
 
 // --- Asteroid hit detection (combinatorial — runs before clock edge)
 // Determine which asteroid the current pixel falls on, and its local coords
-integer a;
 always @* begin
     astr_draw_hit  = 1'b0;
     hit_astr_size  = 2'd0;
@@ -172,30 +171,30 @@ always @* begin
         if (astr_active[a] && !astr_draw_hit) begin
             case (astr_size[a])
                 2'd0: begin  // Small: 24x24
-                    if (curr_x >= astr_x[a] && curr_x < astr_x[a] + 24 &&
-                        curr_y >= astr_y[a] && curr_y < astr_y[a] + 24) begin
-                        astr_draw_hit = 1'b1;
-                        hit_astr_size = 2'd0;
-                        hit_astr_lx   = curr_x - astr_x[a];
-                        hit_astr_ly   = curr_y - astr_y[a];
+                    if (curr_x >= astr_x[a] - ASTR_SMALL  && 
+                        curr_x <  astr_x[a] + ASTR_SMALL  &&
+                        curr_y >= astr_y[a] - ASTR_SMALL  && 
+                        curr_y <  astr_y[a] + ASTR_SMALL  ) begin
+                        hit_astr_lx   = curr_x - (astr_x[a] - ASTR_SMALL);
+                        hit_astr_ly   = curr_y - (astr_y[a] - ASTR_SMALL);
                     end
                 end
                 2'd1: begin  // Medium: 48x48
-                    if (curr_x >= astr_x[a] && curr_x < astr_x[a] + 48 &&
-                        curr_y >= astr_y[a] && curr_y < astr_y[a] + 48) begin
-                        astr_draw_hit = 1'b1;
-                        hit_astr_size = 2'd1;
-                        hit_astr_lx   = curr_x - astr_x[a];
-                        hit_astr_ly   = curr_y - astr_y[a];
+                    if (curr_x >= astr_x[a] - ASTR_MEDIUM && 
+                        curr_x <  astr_x[a] + ASTR_MEDIUM &&
+                        curr_y >= astr_y[a] - ASTR_MEDIUM && 
+                        curr_y <  astr_y[a] + ASTR_MEDIUM ) begin
+                        hit_astr_lx   = curr_x - (astr_x[a] - ASTR_MEDIUM);
+                        hit_astr_ly   = curr_y - (astr_y[a] - ASTR_MEDIUM);
                     end
                 end
                 2'd2: begin  // Large: 96x96
-                    if (curr_x >= astr_x[a] && curr_x < astr_x[a] + 96 &&
-                        curr_y >= astr_y[a] && curr_y < astr_y[a] + 96) begin
-                        astr_draw_hit = 1'b1;
-                        hit_astr_size = 2'd2;
-                        hit_astr_lx   = curr_x - astr_x[a];
-                        hit_astr_ly   = curr_y - astr_y[a];
+                    if (curr_x >= astr_x[a] - ASTR_LARGE  && 
+                        curr_x <  astr_x[a] + ASTR_LARGE  &&
+                        curr_y >= astr_y[a] - ASTR_LARGE  && 
+                        curr_y <  astr_y[a] + ASTR_LARGE  ) begin
+                        hit_astr_lx   = curr_x - (astr_x[a] - ASTR_LARGE);
+                        hit_astr_ly   = curr_y - (astr_y[a] - ASTR_LARGE);
                     end
                 end
                 default: ;
