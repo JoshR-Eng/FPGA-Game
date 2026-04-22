@@ -128,8 +128,8 @@ localparam SHIP_START_X = 11'd720;
 localparam SHIP_START_Y = 11'd450;
 
   // Ship Size
-localparam SHIP_WIDTH   = 11'd100;
-localparam SHIP_HEIGHT  = 11'd100;
+localparam SHIP_WIDTH   = 11'd50;
+localparam SHIP_HEIGHT  = 11'd50;
 
   // Accelerometer Deadzone
 localparam DEADZONE = 4'd2;
