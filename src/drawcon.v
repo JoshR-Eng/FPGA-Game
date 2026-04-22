@@ -43,7 +43,6 @@ module drawcon #(
     input [1:0]  game_state,
     input [10:0] curr_x, curr_y,
     input [10:0] ship_x, ship_y,
-    // NEW
     input [175:0] astr_x_packed,
     input [175:0] astr_y_packed,
     input [15:0]  astr_active_packed,
@@ -71,15 +70,11 @@ reg [3:0] mux_r;
 reg [3:0] mux_g;
 reg [3:0] mux_b;
 
-// Signals for the ship image
-reg [13:0] addr = 0;  // Initialize at power-up to prevent garbage
-wire [11:0] rom_pixel;
-
 // Asteroid
 wire [10:0] astr_x      [0:15];
 wire [10:0] astr_y      [0:15];
 wire        astr_active [0:15];
-wire        astr_size   [0:15];
+wire [1:0]  astr_size   [0:15];
 reg  [1:0]  hit_astr_size;
 reg  [10:0] hit_astr_lx, hit_astr_ly;
 reg         astr_draw_hit;
@@ -87,70 +82,204 @@ reg         astr_draw_hit;
 // Loop counters
 integer a, i;
 
+// --- BRAM wires
+// Ship
+reg  [13:0] ship_addr;
+wire [12:0] ship_pixel; // 13-bit: bit[12]=transparent, [11:8]=R, [7:4]=G, [3:0]=B
+// Asteroids (one address bus, muxed; separate output per ROM)
+reg  [13:0] astr_addr;
+wire [12:0] astr_lg_pixel;
+wire [12:0] astr_md_pixel;
+wire [12:0] astr_sm_pixel;
+// Title
+reg  [16:0] title_addr;
+wire [12:0] title_pixel;
+// Game Over
+reg  [16:0] gameover_addr;
+wire [12:0] gameover_pixel;
+// Infobar
+reg  [16:0] infobar_addr;
+wire [12:0] infobar_pixel;
+// Heart
+reg  [11:0] heart_addr;
+wire [12:0] heart_pixel;
+
+// Delay registers (1 cycle per BRAM read latency)
+reg ship_on_d;
+reg astr_draw_hit_d;
+reg [1:0]  hit_astr_size_d;
+reg title_on_d;
+reg gameover_on_d;
+reg infobar_on_d;
+reg [2:0] heart_on_d;           // one bit per heart (3 hearts)
+
 // ==========================================================
 // --- Determine if current pixel is over an item
 // ==========================================================
 
-// Check for ship
+// --- SHIP -------------------------------------------------
 assign ship_on = (curr_x >= ship_x) && ( curr_x < (ship_x + SHIP_WIDTH)) &&
                  (curr_y >= ship_y) && ( curr_y < (ship_y + SHIP_HEIGHT));
 
-assign on_gamebar = (curr_y <= SCREEN_Y_MIN);
+
+// --- TITLE ------------------------------------------------
+localparam TITLE_X    = (1440 - 360) / 2;   // = 540
+localparam TITLE_Y    = 100 + (800 - 180)/2; // = 410 (centred in game area)
+
+wire title_on    = (game_state == 2'd0) &&
+                   (curr_x >= TITLE_X)    && (curr_x < TITLE_X + TITLE_W) &&
+                   (curr_y >= TITLE_Y)    && (curr_y < TITLE_Y + TITLE_H);
+
+
+// --- GAME OVER --------------------------------------------
+localparam GAMEOVER_X = (1440 - 300) / 2;   // = 570
+localparam GAMEOVER_Y = 100 + (800 - 200)/2; // = 400
+wire gameover_on = (game_state == 2'd2) &&
+                   (curr_x >= GAMEOVER_X) && (curr_x < GAMEOVER_X + GAMEOVER_W) &&
+                   (curr_y >= GAMEOVER_Y) && (curr_y < GAMEOVER_Y + GAMEOVER_H);
+
+// --- INFO BAR ---------------------------------------------
+wire infobar_on  = (curr_y < 11'd100) && (curr_x < 11'd1024);
+
+
+// --- HEARTS -----------------------------------------------
+// Heart positions: right zone of info bar (x = 1024–1439, y = 0–99)
+// Space 3 hearts evenly across 416px — centres at x=1090, 1230, 1370
+localparam HEART_Y0 = 25;   // top of heart within bar
+wire heart_on_0 = (curr_x >= 1065) && (curr_x < 1115) &&
+                  (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
+wire heart_on_1 = (curr_x >= 1195) && (curr_x < 1245) &&
+                  (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
+wire heart_on_2 = (curr_x >= 1325) && (curr_x < 1375) &&
+                  (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
+wire any_heart_on = heart_on_0 | heart_on_1 | heart_on_2;
+
+
+
+// ==========================================================
+// --- Asteroid Hit detection & Size Evaluator 
+// ==========================================================
+
+// --- Asteroid hit detection (combinatorial — runs before clock edge)
+// Determine which asteroid the current pixel falls on, and its local coords
+integer a;
+always @* begin
+    astr_draw_hit  = 1'b0;
+    hit_astr_size  = 2'd0;
+    hit_astr_lx    = 11'd0;
+    hit_astr_ly    = 11'd0;
+    for (a = 0; a < 16; a = a+1) begin
+        if (astr_active[a] && !astr_draw_hit) begin
+            case (astr_size[a])
+                2'd0: begin  // Small: 24x24
+                    if (curr_x >= astr_x[a] && curr_x < astr_x[a] + 24 &&
+                        curr_y >= astr_y[a] && curr_y < astr_y[a] + 24) begin
+                        astr_draw_hit = 1'b1;
+                        hit_astr_size = 2'd0;
+                        hit_astr_lx   = curr_x - astr_x[a];
+                        hit_astr_ly   = curr_y - astr_y[a];
+                    end
+                end
+                2'd1: begin  // Medium: 48x48
+                    if (curr_x >= astr_x[a] && curr_x < astr_x[a] + 48 &&
+                        curr_y >= astr_y[a] && curr_y < astr_y[a] + 48) begin
+                        astr_draw_hit = 1'b1;
+                        hit_astr_size = 2'd1;
+                        hit_astr_lx   = curr_x - astr_x[a];
+                        hit_astr_ly   = curr_y - astr_y[a];
+                    end
+                end
+                2'd2: begin  // Large: 96x96
+                    if (curr_x >= astr_x[a] && curr_x < astr_x[a] + 96 &&
+                        curr_y >= astr_y[a] && curr_y < astr_y[a] + 96) begin
+                        astr_draw_hit = 1'b1;
+                        hit_astr_size = 2'd2;
+                        hit_astr_lx   = curr_x - astr_x[a];
+                        hit_astr_ly   = curr_y - astr_y[a];
+                    end
+                end
+                default: ;
+            endcase
+        end
+    end
+end
+
+// Select which asteroid ROM pixel to use (based on delayed size)
+wire [12:0] astr_pixel_sel = (hit_astr_size_d == 2'd2) ? astr_lg_pixel :
+                             (hit_astr_size_d == 2'd1) ? astr_md_pixel :
+                                                          astr_sm_pixel;
+
 
 // ==========================================================
 // --- Draw Priority Multiplexer
 // ==========================================================
 
 always @* begin
+    // Layer 0: Background
+    mux_r = 4'h0; mux_g = 4'h0; mux_b = 4'h1;
 
-  // --- Layer 0: BACKGROUND --------------------------------
-  //  Standard black space background
-  mux_r = 4'h0;
-  mux_g = 4'h0;
-  mux_b = 4'h1;
+    // Layer 1: Asteroids
+    if (astr_draw_hit_d && !astr_pixel_sel[12]) begin
+        mux_r = astr_pixel_sel[11:8];
+        mux_g = astr_pixel_sel[7:4];
+        mux_b = astr_pixel_sel[3:0];
+    end
 
-  // --- Layer 1: ASTEROIDS ---------------------------------
-  astr_draw_hit = 0;
-  hit_astr_size = 0;
-  hit_astr_lx   = 0;
-  hit_astr_ly   = 0;
-  for (a=0; a<16; a=a+1) begin
-  end
-  // if (on_asteroid) begin
-  //   mux_r = 4'hA;
-  //   mux_g = 4'hA;
-  //   mux_b = 4'hA;
-  // end
+    // Layer 2: Bullets (geometric — keep as-is)
+    if (on_bullet) begin
+        mux_r = 4'hF; mux_g = 4'hF; mux_b = 4'h0;
+    end
 
-  // --- Layer 2: BULLET ------------------------------------
-  if (on_bullet) begin
-    mux_r = 4'hF;
-    mux_g = 4'h0;
-    mux_b = 4'h0;
-  end
+    // Layer 3: Ship
+    if (ship_on_d && !ship_pixel[12] && !blink) begin
+        mux_r = ship_pixel[11:8];
+        mux_g = ship_pixel[7:4];
+        mux_b = ship_pixel[3:0];
+    end
 
-  // --- Layer 3: SHIP --------------------------------------
-  if (ship_on_delay && (rom_pixel[11:0] != 12'h000) && !blink) begin
-      mux_r = rom_pixel[11:8];
-      mux_g = rom_pixel[7:4];
-      mux_b = rom_pixel[3:0];
-  end
-  
-  // --- Layer 4: Crosshair ---------------------------------
-  if (on_cursor) begin
-    mux_r = 4'hF;
-    mux_g = 4'hF;
-    mux_b = 4'hF;
-  end
+    // Layer 4: Crosshair (geometric — keep as-is)
+    if (on_cursor) begin
+        mux_r = 4'hF; mux_g = 4'hF; mux_b = 4'hF;
+    end
 
-  // --- Layer 5: Gamebar -----------------------------------
-  if (on_gamebar) begin
-    case (game_state)
-      2'd0: begin mux_r = 4'h0; mux_g = 4'h0; mux_b = 4'hF; end  // IDLE — blue
-      2'd1: begin mux_r = 4'h0; mux_g = 4'h5; mux_b = 4'h0; end  // PLAYING — dark green
-      2'd2: begin mux_r = 4'hF; mux_g = 4'h0; mux_b = 4'h0; end  // GAME_OVER — red
-    endcase
-  end
+    // Layer 5: Info bar background (solid colour — drawn first, overlaid by BRAM)
+    if (on_gamebar) begin
+        mux_r = 4'h0; mux_g = 4'h0; mux_b = 4'h0;  // black bar
+    end
+
+    // Layer 6: Infobar BRAM overlay (non-transparent pixels only)
+    if (infobar_on_d && !infobar_pixel[12]) begin
+        mux_r = infobar_pixel[11:8];
+        mux_g = infobar_pixel[7:4];
+        mux_b = infobar_pixel[3:0];
+    end
+
+    // Layer 7: Hearts (hide heart if player has lost that life)
+    // heart_on_d[0]=left heart, heart_on_d[2]=right heart
+    // health=3 → all 3 shown, health=2 -> rightmost hidden, etc.
+    if (heart_on_d[0] && (health >= 2'd1) && !heart_pixel[12]) begin
+        mux_r = heart_pixel[11:8]; mux_g = heart_pixel[7:4]; mux_b = heart_pixel[3:0];
+    end
+    if (heart_on_d[1] && (health >= 2'd2) && !heart_pixel[12]) begin
+        mux_r = heart_pixel[11:8]; mux_g = heart_pixel[7:4]; mux_b = heart_pixel[3:0];
+    end
+    if (heart_on_d[2] && (health == 2'd3) && !heart_pixel[12]) begin
+        mux_r = heart_pixel[11:8]; mux_g = heart_pixel[7:4]; mux_b = heart_pixel[3:0];
+    end
+
+    // Layer 8: Title overlay (IDLE state only, transparency gated)
+    if (title_on_d && !title_pixel[12]) begin
+        mux_r = title_pixel[11:8];
+        mux_g = title_pixel[7:4];
+        mux_b = title_pixel[3:0];
+    end
+
+    // Layer 9: Game Over overlay (GAME_OVER state only, transparency gated)
+    if (gameover_on_d && !gameover_pixel[12]) begin
+        mux_r = gameover_pixel[11:8];
+        mux_g = gameover_pixel[7:4];
+        mux_b = gameover_pixel[3:0];
+    end
 end
 
 
@@ -166,18 +295,61 @@ assign draw_b = mux_b;
 wire [10:0] local_ship_x = curr_x - ship_x;
 wire [10:0] local_ship_y = curr_y - ship_y;
 
+// --- Registered address calculation (clocked)
 always @(posedge clk) begin
-    // Delay ship_on_delay by one clock to match
-    // BRAM read latency
-    ship_on_delay <= ship_on;
+    // 1-cycle latency delays
+    ship_on_d        <= ship_on;
+    astr_draw_hit_d  <= astr_draw_hit;
+    hit_astr_size_d  <= hit_astr_size;
+    title_on_d       <= title_on;
+    gameover_on_d    <= gameover_on;
+    infobar_on_d     <= infobar_on;
+    heart_on_d       <= {heart_on_2, heart_on_1, heart_on_0};
 
-    // Retrieve BRAM address
-    if (ship_on) begin
-        // Address = (Y * Width) + X
-        addr <= (local_ship_y * SHIP_WIDTH) + local_ship_x;
-    end else begin
-        addr <= 0;
-    end
+    // Ship address
+    if (ship_on)
+        ship_addr <= (local_ship_y * SHIP_WIDTH) + local_ship_x;
+    else
+        ship_addr <= 14'd0;
+
+    // Asteroid address (all 3 ROMs read same addr; mux selects output)
+    if (astr_draw_hit) begin
+        case (hit_astr_size)
+            2'd0: astr_addr <= (hit_astr_ly * 24)  + hit_astr_lx;
+            2'd1: astr_addr <= (hit_astr_ly * 48)  + hit_astr_lx;
+            2'd2: astr_addr <= (hit_astr_ly * 96)  + hit_astr_lx;
+            default: astr_addr <= 14'd0;
+        endcase
+    end else
+        astr_addr <= 14'd0;
+
+    // Title address
+    if (title_on)
+        title_addr <= ((curr_y - TITLE_Y) * TITLE_W) + (curr_x - TITLE_X);
+    else
+        title_addr <= 17'd0;
+
+    // Game Over address
+    if (gameover_on)
+        gameover_addr <= ((curr_y - GAMEOVER_Y) * GAMEOVER_W) + (curr_x - GAMEOVER_X);
+    else
+        gameover_addr <= 17'd0;
+
+    // Infobar address
+    if (infobar_on)
+        infobar_addr <= (curr_y * 11'd1024) + curr_x;
+    else
+        infobar_addr <= 17'd0;
+
+    // Heart address (all 3 hearts share the same 50×50 ROM)
+    if (heart_on_0)
+        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1065);
+    else if (heart_on_1)
+        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1195);
+    else if (heart_on_2)
+        heart_addr <= ((curr_y - HEART_Y0) * 50) + (curr_x - 1325);
+    else
+        heart_addr <= 12'd0;
 end
 
 
@@ -186,82 +358,24 @@ end
 // --- Block Memory Assignment 
 // ==========================================================
 
-//blk_mem_gen_0 inst
-//(
-//.clka(clk),
-//.addra(addr),
-//.douta(rom_pixel)
-//);
-
-// --- Title Sprite
-blk_mem_gen_0 title_sprite
-(
-.clka(clk),
-.addra(addr),
-.douta(rom_pixel)
-);
-
-// --- Ship Sprite
-blk_mem_gen_1 ship_sprite
-(
-.clka(clk),
-.addra(addr),
-.douta(rom_pixel)
-);
-
-// --- Asteroid Sprites
-// Large
-blk_mem_gen_2 astr_large_sprite
-(
-.clka(clk),
-.addra(addr),
-.douta(rom_pixel)
-);
-
-// Medium
-blk_mem_gen_3 astr_med_sprite
-(
-.clka(clk),
-.addra(addr),
-.douta(rom_pixel)
-);
-
-// Small
-blk_mem_gen_4 astr_small_sprite
-(
-.clka(clk),
-.addra(addr),
-.douta(rom_pixel)
-);
+blk_mem_gen_0 title_sprite   (.clka(clk), 
+                              .addra(title_addr),    .douta(title_pixel));
+blk_mem_gen_1 ship_sprite    (.clka(clk), 
+                              .addra(ship_addr),     .douta(ship_pixel));
+blk_mem_gen_2 astr_lg_sprite (.clka(clk), 
+                              .addra(astr_addr),     .douta(astr_lg_pixel));
+blk_mem_gen_3 astr_md_sprite (.clka(clk), 
+                              .addra(astr_addr),     .douta(astr_md_pixel));
+blk_mem_gen_4 astr_sm_sprite (.clka(clk), 
+                              .addra(astr_addr),     .douta(astr_sm_pixel));
+blk_mem_gen_5 gameover_sprite(.clka(clk), 
+                              .addra(gameover_addr), .douta(gameover_pixel));
+blk_mem_gen_6 infobar_sprite (.clka(clk), 
+                              .addra(infobar_addr),  .douta(infobar_pixel));
+blk_mem_gen_7 heart_sprite   (.clka(clk), 
+                              .addra(heart_addr),    .douta(heart_pixel));
 
 
-// --- Game Over Sprite
-blk_mem_gen_5 game_over_sprite
-(
-.clka(clk),
-.addra(addr),
-.douta(rom_pixel)
-);
-
-// --- Info Bar Sprite
-blk_mem_gen_6 info_sprite
-(
-.clka(clk),
-.addra(addr),
-.douta(rom_pixel)
-);
-
-
-/*
-* Need to add the memory blocks for all the sprites
-*   - New Ship coe
-*   - Asteroids:
-*       > large
-*       > Medium
-*       > small
-*   - Title
-*   - Game Over
-*/
 
 //==========================================================
 // --- Unflatten Arrays 
