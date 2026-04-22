@@ -128,8 +128,8 @@ localparam SHIP_START_X = 11'd720;
 localparam SHIP_START_Y = 11'd450;
 
   // Ship Size
-localparam SHIP_WIDTH   = 11'd50;
-localparam SHIP_HEIGHT  = 11'd50;
+localparam SHIP_WIDTH   = 11'd80;
+localparam SHIP_HEIGHT  = 11'd80;
 
   // Accelerometer Deadzone
 localparam DEADZONE = 4'd2;
@@ -400,7 +400,9 @@ drawcon #(
   .MAX_ASTEROIDS(MAX_ASTEROIDS),
   .ASTR_SMALL(ASTR_SMALL),
   .ASTR_MEDIUM(ASTR_MEDIUM),
-  .ASTR_LARGE(ASTR_LARGE)
+  .ASTR_LARGE(ASTR_LARGE),
+  .SHIP_WIDTH(SHIP_WIDTH),
+  .SHIP_HEIGHT(SHIP_HEIGHT)
   ) drawcon_inst(
   .clk(pixclk), .rst(rst),
   .ship_x(ship_x), .ship_y(ship_y),
