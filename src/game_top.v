@@ -197,7 +197,7 @@ shipMovement #(
   .acl_data(acl_data),
   .ship_x(ship_x),
   .ship_y(ship_y),
-  .speed_boost(speed_boost_en)
+  .speed_boost_en(speed_boost_en)
   );
 
 // Bullet Manager
