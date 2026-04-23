@@ -46,7 +46,8 @@ always @(posedge clk)
     blink_counter <= blink_counter + 1'b1;
 
 wire overheat = (gun_heat >= OVERHEAT_THRESHOLD);
-wire blink = blink_counter[BLINK_BIT] && overheat; // toggles every 2^BLINK_BIT frames 
+    // toggles every 2^BLINK_BIT frames 
+wire blink = blink_counter[BLINK_BIT] && (overheat || nightmare_en); 
 
 
 // ==========================================================
