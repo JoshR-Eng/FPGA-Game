@@ -39,7 +39,8 @@ module gameState #(
   output        blink,
   output        game_active,  // Gates other modules
   output [1:0]  game_state,   // IDLE/PLAYING/GAME_OVER
-  output        new_game
+  output        new_game,
+  input         shield_en
 );
     
 
@@ -123,7 +124,8 @@ always @(posedge clk) begin
           invis_timer <= invis_timer - 7'd1;
         if (ship_hit && invis_timer == 7'd0) begin
           invis_timer <= INVIS_FRAMES;
-          health_reg  <= health_reg - 2'b1;
+          if (!shield_en)
+            health_reg  <= health_reg - 2'b1;
         end
 
         // 'Score Increase' Logic

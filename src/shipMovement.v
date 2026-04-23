@@ -48,7 +48,8 @@ module shipMovement #(
 
   // Ship Position Outputs
   output [10:0] ship_x,
-  output [10:0] ship_y
+  output [10:0] ship_y,
+  input         speed_boost_en
   );
 
 
@@ -92,6 +93,11 @@ wire [3:0] y_mag = y_neg ? (~acl_y[3:0] + 1'b1) : acl_y[3:0];
 wire [3:0] vel_x = tilt_to_vel(y_mag);
 wire [3:0] vel_y = tilt_to_vel(x_mag);
 
+// --- Speed multiplier
+// Speed boost: doubles the per-frame step when enabled
+wire [3:0] vel_x_eff = speed_boost_en ? {vel_x[2:0], 1'b0} : vel_x;
+wire [3:0] vel_y_eff = speed_boost_en ? {vel_y[2:0], 1'b0} : vel_y;
+
 
 // ==========================================================
 // --- Magnitude to Velocity Function
@@ -124,17 +130,21 @@ always@(posedge clk) begin
     end else if (frame_tick) begin
     
     // Y axis (controlled by acl_x)
-    if (x_neg && vel_y > 0) begin
-        ship_y_reg <= (ship_y_reg + vel_y < Y_MAX_EFF) ? ship_y_reg + vel_y : Y_MAX_EFF;
-    end else if (!x_neg && vel_y > 0) begin
-        ship_y_reg <= (ship_y_reg > Y_MIN + vel_y) ? ship_y_reg - vel_y : Y_MIN;
+    if (x_neg && vel_y_eff > 0) begin
+        ship_y_reg <= (ship_y_reg + vel_y_eff < Y_MAX_EFF) ? (ship_y_reg + vel_y_eff) 
+                                                           : (Y_MAX_EFF);
+    end else if (!x_neg && vel_y_eff > 0) begin
+        ship_y_reg <= (ship_y_reg > Y_MIN + vel_y_eff)     ? (ship_y_reg - vel_y_eff) 
+                                                           : (Y_MIN);
     end
 
     // X axis (controlled by acl_y)
-    if (y_neg && vel_x > 0) begin
-        ship_x_reg <= (ship_x_reg + vel_x < X_MAX_EFF) ? ship_x_reg + vel_x : X_MAX_EFF;
-    end else if (!y_neg && vel_x > 0) begin
-        ship_x_reg <= (ship_x_reg > X_MIN + vel_x) ? ship_x_reg - vel_x : X_MIN;
+    if (y_neg && vel_x_eff > 0) begin
+        ship_x_reg <= (ship_x_reg + vel_x_eff < X_MAX_EFF) ? (ship_x_reg + vel_x_eff) 
+                                                           : (X_MAX_EFF);
+    end else if (!y_neg && vel_x_eff > 0) begin
+        ship_x_reg <= (ship_x_reg > X_MIN + vel_x_eff)     ? (ship_x_reg - vel_x_eff) 
+                                                           : (X_MIN);
     end
    
     

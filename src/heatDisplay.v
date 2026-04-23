@@ -29,6 +29,8 @@ module heatDisplay #(
     input rst,
     input frame_tick,
 
+    input nightmare_en,
+
     input [7:0] gun_heat,
     output [15:0] LED
     );
@@ -57,7 +59,7 @@ reg [15:0] LED_reg;
 always @(posedge clk) begin
   if (frame_tick) begin
 
-    if (gun_heat >= OVERHEAT_THRESHOLD)
+    if ((gun_heat >= OVERHEAT_THRESHOLD) || (nightmare_en))
       LED_reg <= blink ? 16'hFFFF: 16'h0000;
     else 
       case (level)

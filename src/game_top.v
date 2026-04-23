@@ -23,7 +23,7 @@
 module game_top(
     // System
     input clk, rst, 
-    input [2:0] sw,
+    input [7:0] sw,
     input [4:0] btn,
     
     // VGA
@@ -101,8 +101,6 @@ wire        new_game;
 wire        game_active;
 wire [1:0]  game_state;
 wire [7:0]  gun_heat;     
-wire [1:0] difficulty;
-assign difficulty = sw[1:0];
 
 // Mouse
 //wire [7:0]  mouse_dx;
@@ -155,21 +153,26 @@ localparam CURSOR_SPEED   = 10;
 
 
 // ==========================================================
-// --- Clock domain Synchronise 
+// --- Special Features
 // ==========================================================
 
-// mouse.v uses 100 MHz but other modules use the 106 MHz pixclk
-// hence, the values must synchronise into pixclk domain
+// Difficulty: Change the spawn rate of asteroids
+wire [1:0] difficulty_en = {sw[7], sw[4]}; 
 
-//reg left_btn_s1, left_btn_s2;
-//reg right_btn_s1, right_btn_s2;
+// Power Up Switches
+wire speed_boot_en  = sw[1];      // Ship moves faster
+wire shield_en      = sw[3];      // Suppresses life loss on hit
+wire rapid_fire_en  = sw[5];      // Faster gun cooldown
 
-//always @(posedge pixclk) begin
-//  left_btn_s1  <= left_btn;
-//  left_btn_s2  <= left_btn_s1;
-//  right_btn_s1 <= right_btn;
-//  right_btn_s2 <= right_btn_s1;
-//end
+// Hidden Easter Eggs: Nightmare Mode
+//  Activated if player tries to use multiple power ups
+//  but if sw[2] active then don't active
+wire nightmare_en = (sw[5] & sw[3] & sw[1] & ~sw[2]);
+
+// Final effective signals - nightmare overrides shield, locks diff to max
+wire [1:0]  difficulty  = nightmare_en  ? 2'b11 : difficulty_en;
+wire        shield      = shield_en     & ~nightmare_en;
+wire        rapid_fire  = rapid_fire_en | nightmare_en;
 
 // ==========================================================
 // --- Game Logic Modules
@@ -193,7 +196,8 @@ shipMovement #(
   .frame_tick(frame_tick),
   .acl_data(acl_data),
   .ship_x(ship_x),
-  .ship_y(ship_y)
+  .ship_y(ship_y),
+  .speed_boost(speed_boost_en)
   );
 
 // Bullet Manager
@@ -225,7 +229,8 @@ bulletManager #(
   .bul_y_packed(bul_y_packed),
   .bul_active_packed(bul_active_packed),
   .bul_hit(bul_hit),
-  .gun_heat(gun_heat)
+  .gun_heat(gun_heat),
+  .rapid_fire_en(rapid_fire)
 );
 
 // Asteroid Manager
@@ -292,7 +297,8 @@ gameState game_inst (
   .blink(blink),
   .game_active(game_active),
   .game_state(game_state),
-  .new_game(new_game)
+  .new_game(new_game),
+  .shield_en(effective_shield)
 );
 
 // Heat Display
@@ -304,7 +310,8 @@ heatDisplay #(
   .rst(rst),
   .frame_tick(frame_tick_ungated),
   .gun_heat(gun_heat),
-  .LED(LED)
+  .LED(LED),
+  .nightmare_en(nightmare_en)
 );
 
 // Score Display on Seven-seg Display

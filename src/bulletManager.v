@@ -59,11 +59,12 @@ module bulletManager #(
   output reg on_bullet,
 
     // Bullet Position & State
-  input  [15:0]  bul_hit,
-  output [175:0] bul_x_packed,
-  output [175:0] bul_y_packed,
-  output [15:0] bul_active_packed,
-  output [7:0] gun_heat
+  input  [15:0]   bul_hit,
+  output [175:0]  bul_x_packed,
+  output [175:0]  bul_y_packed,
+  output [15:0]   bul_active_packed,
+  output [7:0]    gun_heat,
+  input           rapid_fire_en
   );
 
 
@@ -86,6 +87,11 @@ reg signed [3:0] spawn_vx_reg, spawn_vy_reg;
 
 reg [7:0] gun_heat_reg;
 assign gun_heat = gun_heat_reg;
+
+
+// Cooldown Rate
+wire [7:0] COOLDOWN = rapid_fire_en ? (COOLDOWN_RATE * 3) :
+                                      (COOLDOWN_RATE);
 
 
 // ==========================================================
@@ -206,8 +212,8 @@ always @(posedge clk) begin
 
     // Cooldown bullet otherwise 
     end else begin
-      if (gun_heat_reg >= COOLDOWN_RATE)
-        gun_heat_reg <= gun_heat_reg - COOLDOWN_RATE;
+      if (gun_heat_reg >= COOLDOWN)
+        gun_heat_reg <= gun_heat_reg - COOLDOWN;
       else
         gun_heat_reg <= 8'd0;
     end
