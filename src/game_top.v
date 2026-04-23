@@ -160,7 +160,7 @@ localparam CURSOR_SPEED   = 10;
 wire [1:0] difficulty_en = {sw[7], sw[4]}; 
 
 // Power Up Switches
-wire speed_boot_en  = sw[1];      // Ship moves faster
+wire speed_boost_en  = sw[1];      // Ship moves faster
 wire shield_en      = sw[3];      // Suppresses life loss on hit
 wire rapid_fire_en  = sw[5];      // Faster gun cooldown
 
@@ -298,7 +298,7 @@ gameState game_inst (
   .game_active(game_active),
   .game_state(game_state),
   .new_game(new_game),
-  .shield_en(effective_shield)
+  .shield_en(shield)
 );
 
 // Heat Display
