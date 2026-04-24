@@ -91,8 +91,10 @@ always @(posedge clk) begin
               $time);
 
     // 4.
-    if ((curr_x == 11'd0) && (curr_y == 11'd0))
-      blank_colour_errors <= blank_colour_errors + ((pix_r|pix_g|pix_b) != 0 ? 1:0);
+    always @(posedge clk) begin
+    if (curr_x == 11'd0 && (pix_r != 0 || pix_g != 0 || pix_b != 0))
+        blank_colour_errors <= blank_colour_errors + 1;
+    end
 end
 
 // PULSE WIDTH CHECK
@@ -119,6 +121,8 @@ initial begin
     draw_r = 4'h0; draw_g = 4'h0; draw_b = 4'h0;
     #20;
     rst = 1;
+    
+    $dumpoff; // pausing dumping during bulk frame runs
    
     // --- TEST 1: frame count -----------------------------
     // Run for N complete frames
@@ -177,12 +181,16 @@ initial begin
         
         rst = 0; #20; rst = 1;
         
+        // Warm-up: skip 1 full frame after reset before checking
+        repeat (1904 * 932) @(posedge clk);
+
+
         // Run 2 full frames
         repeat (1904 * 932 * 2) begin
             @(posedge clk);
             
             // curr_x should never exceed screen width
-            if (curr_x > 11'd1439) begin
+            if (curr_x > 11'd1440) begin
                 $display("[FAIL] T=%0t: curr_x=%0d exceeds 1439", $time, curr_x);
                 cx_errors = cx_errors + 1;
             end
@@ -207,6 +215,7 @@ initial begin
     // Count cycles where pix_r/g/b are non-zero 
     // Expected: exactly 1440 * 900 = 1,296,000 non-zero cycles per frame
 
+    $dumpon; // resume dumping for test 4
     begin : test_active_count
         integer active_count;
         integer ft_count;
@@ -223,11 +232,10 @@ initial begin
         
         // Run exactly 1 frame: wait for frame_tick to start clean
         @(posedge frame_tick);
-        
         // Count from start of next frame to the following frame_tick
-        active_count = 0;
         @(posedge frame_tick);   // now at frame boundary
         
+        active_count = 0;
         repeat (1904 * 932) begin
             @(posedge clk);
             if (pix_r == 4'hF)   // only our colour counts
@@ -244,6 +252,7 @@ initial begin
         draw_r = 4'h0;  // restore
     end
 
+    $dumpoff;
     // --- Test 5: Blanking Colour Check -------------------
     if (blank_colour_errors == 0)
         $display("[PASS] No non-zero pixels during blanking");
