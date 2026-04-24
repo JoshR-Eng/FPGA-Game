@@ -7,7 +7,8 @@ WAVES = waves.vcd
 
 # --- Testbench Examples ---
 # Uncomment one of these to set SOURCES, or define your own
-SOURCES = tb/vga_tb.v src/vga.v
+#SOURCES = tb/vga_tb.v src/vga.v
+SOURCES = tb/collisions_tb.v src/collisions.v
 
 
 # "sim" recipe: This compiles, runs and open the waves
