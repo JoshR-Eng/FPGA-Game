@@ -11,8 +11,11 @@ WAVES = waves.vcd
 SOURCES = tb/collisions_tb.v src/collisions.v
 
 
-# "sim" recipe: This compiles, runs and open the waves
-sim: build run wave
+# "sim" recipe: This compiles and runs testbench
+sim: build run
+
+# "display" recipe: This completes sim then displays waveform
+display: build run wave
 
 # Recipe to compile the code
 build:
