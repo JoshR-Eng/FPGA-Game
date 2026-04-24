@@ -209,7 +209,18 @@ initial begin
             $display("[FAIL] curr_x: %0d sequencing errors", cx_errors);
     end
 
-    // --- TEST 4: Active pixel count ----------------------
+
+
+    // --- Test 4: Blanking Colour Check -------------------
+    if (blank_colour_errors == 0)
+        $display("[PASS] No non-zero pixels during blanking");
+    else
+        $display("[FAIL] %0d blanking violations detected", blank_colour_errors);
+
+
+
+
+    // --- TEST 5: Active pixel count ----------------------
     // Count cycles where pix_r/g/b are non-zero 
     // Expected: exactly 1440 * 900 = 1,296,000 non-zero cycles per frame
 
@@ -251,18 +262,11 @@ initial begin
     end
 
     $dumpoff;
-    // --- Test 5: Blanking Colour Check -------------------
-    if (blank_colour_errors == 0)
-        $display("[PASS] No non-zero pixels during blanking");
-    else
-        $display("[FAIL] %0d blanking violations detected", blank_colour_errors);
 
 
 
 
-
-
-
+    // --- END ---------------------------------------------
     $display("--- tb_vga complete ---");
     $finish;
 
