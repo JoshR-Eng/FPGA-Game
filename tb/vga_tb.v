@@ -91,10 +91,8 @@ always @(posedge clk) begin
               $time);
 
     // 4.
-    always @(posedge clk) begin
     if (curr_x == 11'd0 && (pix_r != 0 || pix_g != 0 || pix_b != 0))
         blank_colour_errors <= blank_colour_errors + 1;
-    end
 end
 
 // PULSE WIDTH CHECK
