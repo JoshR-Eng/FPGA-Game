@@ -5,11 +5,14 @@ FLAGS = -g2012
 OUTPUT = sim.vvp
 WAVES = waves.vcd
 
-# --- Testbench Examples ---
-# Uncomment one of these to set SOURCES, or define your own
-#SOURCES = tb/vga_tb.v src/vga.v
-SOURCES = tb/collisions_tb.v src/collisions.v
+# ----------- Testbench Selection --------------
+# Uncomment one to set SOURCES
 
+#SOURCES = tb/vga_tb.v src/vga.v
+#SOURCES = tb/collisions_tb.v src/collisions.v
+SOURCES = tb/gameState_tb.v src/gameState.v
+
+# -----------------------------------------------
 
 # "sim" recipe: This compiles and runs testbench
 sim: build run
