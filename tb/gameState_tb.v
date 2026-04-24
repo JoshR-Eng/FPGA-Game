@@ -294,7 +294,6 @@ task send_frame_ticks;
   integer i;
   begin
     for (i = 0; i < n; i = i + 1) begin
-      @(posedge clk);
       frame_tick = 1'b1;
       @(posedge clk);
       frame_tick = 1'b0;
@@ -307,7 +306,6 @@ endtask
 // Pulse start_trigger for exactly 1 clock cycle
 task pulse_start;
   begin
-    @(posedge clk);
     start_trigger = 1'b1;
     @(posedge clk);
     start_trigger = 1'b0;
