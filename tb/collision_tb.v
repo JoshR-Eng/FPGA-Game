@@ -5,7 +5,7 @@
 // 
 // Create Date: 09.02.2026 11:41:29
 // Design Name: 
-// Module Name: tb_collisions
+// Module Name: collisions_tb
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module tb_collisions();
+module collisions_tb();
 
 //==========================================================
 // --- Signals & Parameters
