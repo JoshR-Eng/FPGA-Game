@@ -79,7 +79,7 @@ always #5 clk = ~clk;
 
 initial begin
   $dumpfile("waves.vcd");
-  $dumpvars(0, collision_tb);
+  $dumpvars(1, collisions_tb);
 
   // --- Initialise
   test_pass  = 0;
@@ -106,7 +106,7 @@ initial begin
   // -------------------------------------------------------
   $display("\n --- TEST 1: Direct hit ---");
   clear_all();
-  set_asteroids (0, 11'd500, 11'd500, 2'b00, 1'b1); // small, active
+  set_asteroid  (0, 11'd500, 11'd500, 2'b00, 1'b1); // small, active
   set_bullet    (0, 11'd494, 11'd494, 1'b1);        // active
 
   check("T1: astr_hit[0] == 1", astr_hit[0] == 1'b1);
@@ -226,7 +226,7 @@ initial begin
   $display("\n--- `collision_tb` COMPLETE --- \n\t%0d PASS\n\t%0d FAIL",
             test_pass,
             test_fail);
-  $finish
+  $finish;
 end
 
 
@@ -236,7 +236,6 @@ end
 
 // Clear all inputs to a known inactivate state
 task clear_all;
-  integer i;
   begin
       bul_x_packed      = 0;
       bul_y_packed      = 0;
@@ -253,7 +252,7 @@ endtask
 
 // Drive bullet slot [index] with position and active state
 task set_bullet;
-  input integer index;
+  input [31:0]  index;
   input [10:0]  x;
   input [10:0]  y;
   input         active;
@@ -266,7 +265,7 @@ endtask
 
 // Drive asteroid slot [index] with position, size and active state
 task set_asteroid;
-    input integer   index;
+    input [31:0]    index;
     input [10:0]    x;
     input [10:0]    y;
     input [1:0]     size;   // 2'b00=small, 2'b01=medium, 2'b10=large
