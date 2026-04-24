@@ -108,7 +108,7 @@ end
 // STIMULUS + CHECKER
 //  force input values and check results
 initial begin
-    $dumpfile("vga_tb.vcd");
+    $dumpfile("waves.vcd");
     $dumpvars(0, vga_tb);
 
     // Initialise
