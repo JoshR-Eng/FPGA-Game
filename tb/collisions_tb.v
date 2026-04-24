@@ -108,6 +108,7 @@ initial begin
   clear_all();
   set_asteroid  (0, 11'd500, 11'd500, 2'b00, 1'b1); // small, active
   set_bullet    (0, 11'd494, 11'd494, 1'b1);        // active
+  fire_frame_tick();
 
   check("T1: astr_hit[0] == 1", astr_hit[0] == 1'b1);
   check("T1: bul_hit[0]  == 1", bul_hit[0]  == 1'b1);
