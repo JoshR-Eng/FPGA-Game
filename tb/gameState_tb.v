@@ -48,11 +48,12 @@ wire        new_game;
 integer test_pass;
 integer test_fail;
 
-
 // --- Parameters
-parameter PERIOD        = 10;           // ns per clock
-parameter FRAME_CYCLES  = 1904 * 932;   // cycles per frame
-parameter NUM_FRAMES    = 3;           
+localparam IDLE      = 2'd0;
+localparam PLAYING   = 2'd1;
+localparam GAME_OVER = 2'd2;
+localparam INVIS_FRAMES = 120;
+
 
 //==========================================================
 // --- Clock Generation
@@ -219,6 +220,7 @@ initial begin
   ship_hit = 1'b1;
   send_frame_ticks(1);
   ship_hit = 1'b0;
+  send_frame_ticks(1);
 
   check("T4: health == 0",                   health      == 2'd0);
   check("T4: state  == GAME_OVER",           game_state  == GAME_OVER);
