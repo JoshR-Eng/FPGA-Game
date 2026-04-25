@@ -294,11 +294,9 @@ task send_frame_ticks;
   integer i;
   begin
     for (i = 0; i < n; i = i + 1) begin
-      frame_tick = 1'b1;
+      @(negedge clk); frame_tick = 1'b1;
       @(posedge clk);
-      frame_tick = 1'b0;
-      @(posedge clk);  // settle 1
-      @(posedge clk);  // settle 2
+      @(negedge clk); frame_tick = 1'b0;
     end
   end
 endtask
