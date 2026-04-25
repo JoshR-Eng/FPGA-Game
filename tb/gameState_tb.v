@@ -156,7 +156,7 @@ initial begin
 
   // Restore clean state
   clear_inputs();
-
+  send_frame_ticks(100); // drain 60-frame startup grace period
 
   // --------------------------------------------------------
   // TEST 3: Ship hit with invincibility
@@ -312,7 +312,7 @@ endtask
 
 // Convenience pass/fail assertion
 task check;
-  input [127:0] label;
+  input [511:0] label;
   input         condition;
   begin
     if (condition) begin
