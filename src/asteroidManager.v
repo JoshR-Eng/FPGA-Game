@@ -58,7 +58,9 @@ module asteroidManager#(
 // ==========================================================
 
   // Position
+(* KEEP = "true", MAX_FANOUT = 16 *)
 reg [10:0]        astr_x      [0:MAX_ASTEROIDS-1];
+(* KEEP = "true", MAX_FANOUT = 16 *)
 reg [10:0]        astr_y      [0:MAX_ASTEROIDS-1];
   // Velocity
 reg signed [3:0]  vel_x       [0:MAX_ASTEROIDS-1];       

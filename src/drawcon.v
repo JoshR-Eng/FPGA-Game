@@ -74,9 +74,12 @@ wire [10:0] astr_x      [0:15];
 wire [10:0] astr_y      [0:15];
 wire        astr_active [0:15];
 wire [1:0]  astr_size   [0:15];
-reg  [1:0]  hit_astr_size;
-reg  [10:0] hit_astr_lx, hit_astr_ly;
-reg         astr_draw_hit;
+reg         astr_draw_hit_comb;                 // Combinational Values
+reg [1:0]   hit_astr_size_comb;                 // |
+reg [10:0]  hit_astr_lx_comb, hit_astr_ly_comb; // |
+reg         astr_draw_hit_r;                    // Registered Values
+reg [1:0]   hit_astr_size_r;                    // |
+reg [10:0]  hit_astr_lx_r, hit_astr_ly_r;       // |
 
 // Loop counters
 integer a, i, s;
@@ -183,22 +186,22 @@ always @(posedge clk) twinkle_ctr <= twinkle_ctr + 1;
 // --- Asteroid hit detection (combinatorial — runs before clock edge)
 // Determine which asteroid the current pixel falls on, and its local coords
 always @* begin
-    astr_draw_hit  = 1'b0;
-    hit_astr_size  = 2'd0;
-    hit_astr_lx    = 11'd0;
-    hit_astr_ly    = 11'd0;
+    astr_draw_hit_comb  = 1'b0;
+    hit_astr_size_comb  = 2'd0;
+    hit_astr_lx_comb    = 11'd0;
+    hit_astr_ly_comb    = 11'd0;
     for (a = 0; a < 16; a = a+1) begin
-        if (astr_active[a] && !astr_draw_hit) begin
+        if (astr_active[a] && !astr_draw_hit_comb) begin
             case (astr_size[a])
                 2'd0: begin  // Small: 24x24
                     if (curr_x >= astr_x[a] - ASTR_SMALL  && 
                         curr_x <  astr_x[a] + ASTR_SMALL  &&
                         curr_y >= astr_y[a] - ASTR_SMALL  && 
                         curr_y <  astr_y[a] + ASTR_SMALL  ) begin
-                        astr_draw_hit = 1'b1; 
-                        hit_astr_size = astr_size[a];
-                        hit_astr_lx   = curr_x - (astr_x[a] - ASTR_SMALL);
-                        hit_astr_ly   = curr_y - (astr_y[a] - ASTR_SMALL);
+                        astr_draw_hit_comb = 1'b1; 
+                        hit_astr_size_comb = astr_size[a];
+                        hit_astr_lx_comb   = curr_x - (astr_x[a] - ASTR_SMALL);
+                        hit_astr_ly_comb   = curr_y - (astr_y[a] - ASTR_SMALL);
                     end
                 end
                 2'd1: begin  // Medium: 48x48
@@ -206,10 +209,10 @@ always @* begin
                         curr_x <  astr_x[a] + ASTR_MEDIUM &&
                         curr_y >= astr_y[a] - ASTR_MEDIUM && 
                         curr_y <  astr_y[a] + ASTR_MEDIUM ) begin
-                        astr_draw_hit = 1'b1; 
-                        hit_astr_size = astr_size[a];
-                        hit_astr_lx   = curr_x - (astr_x[a] - ASTR_MEDIUM);
-                        hit_astr_ly   = curr_y - (astr_y[a] - ASTR_MEDIUM);
+                        astr_draw_hit_comb = 1'b1; 
+                        hit_astr_size_comb = astr_size[a];
+                        hit_astr_lx_comb   = curr_x - (astr_x[a] - ASTR_MEDIUM);
+                        hit_astr_ly_comb   = curr_y - (astr_y[a] - ASTR_MEDIUM);
                     end
                 end
                 2'd2: begin  // Large: 96x96
@@ -217,10 +220,10 @@ always @* begin
                         curr_x <  astr_x[a] + ASTR_LARGE  &&
                         curr_y >= astr_y[a] - ASTR_LARGE  && 
                         curr_y <  astr_y[a] + ASTR_LARGE  ) begin
-                        astr_draw_hit = 1'b1; 
-                        hit_astr_size = astr_size[a];
-                        hit_astr_lx   = curr_x - (astr_x[a] - ASTR_LARGE);
-                        hit_astr_ly   = curr_y - (astr_y[a] - ASTR_LARGE);
+                        astr_draw_hit_comb = 1'b1; 
+                        hit_astr_size_comb = astr_size[a];
+                        hit_astr_lx_comb   = curr_x - (astr_x[a] - ASTR_LARGE);
+                        hit_astr_ly_comb   = curr_y - (astr_y[a] - ASTR_LARGE);
                     end
                 end
                 default: ;
@@ -279,7 +282,9 @@ always @* begin
 
     // Layer 5: Info bar background (solid colour — drawn first, overlaid by BRAM)
     if (on_gamebar) begin
-        mux_r = 4'h0; mux_g = 4'h0; mux_b = 4'h0;  // black bar
+        mux_r = 4'hd; 
+        mux_g = 4'hc; 
+        mux_b = 4'h4;  // black bar
     end
 
     // Layer 6: Infobar BRAM overlay (non-transparent pixels only)
@@ -334,8 +339,12 @@ wire [10:0] local_ship_y = curr_y - ship_y;
 always @(posedge clk) begin
     // 1-cycle latency delays
     ship_on_d        <= ship_on;
-    astr_draw_hit_d  <= astr_draw_hit;
-    hit_astr_size_d  <= hit_astr_size;
+    astr_draw_hit_r  <= astr_draw_hit_comb;
+    hit_astr_size_r  <= hit_astr_size_comb;
+    hit_astr_lx_r     <= hit_astr_lx_comb;
+    hit_astr_ly_r     <= hit_astr_ly_comb;
+    astr_draw_hit_d <= astr_draw_hit_r;
+    hit_astr_size_d <= hit_astr_size_r;
     title_on_d       <= title_on;
     gameover_on_d    <= gameover_on;
     infobar_on_d     <= infobar_on;
@@ -348,11 +357,11 @@ always @(posedge clk) begin
         ship_addr <= 14'd0;
 
     // Asteroid address (all 3 ROMs read same addr; mux selects output)
-    if (astr_draw_hit) begin
-        case (hit_astr_size)
-            2'd0: astr_addr <= (hit_astr_ly * 24)  + hit_astr_lx;
-            2'd1: astr_addr <= (hit_astr_ly * 48)  + hit_astr_lx;
-            2'd2: astr_addr <= (hit_astr_ly * 96)  + hit_astr_lx;
+    if (astr_draw_hit_r) begin
+        case (hit_astr_size_r)
+            2'd0: astr_addr <= (hit_astr_ly_r * 24)  + hit_astr_lx_r;
+            2'd1: astr_addr <= (hit_astr_ly_r * 48)  + hit_astr_lx_r;
+            2'd2: astr_addr <= (hit_astr_ly_r * 96)  + hit_astr_lx_r;
             default: astr_addr <= 14'd0;
         endcase
     end else

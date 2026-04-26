@@ -130,10 +130,10 @@ always@(posedge clk) begin
     end else if (frame_tick) begin
     
     // Y axis (controlled by acl_x)
-    if (x_neg && vel_y_eff > 0) begin
+    if (!x_neg && vel_y_eff > 0) begin
         ship_y_reg <= (ship_y_reg + vel_y_eff < Y_MAX_EFF) ? (ship_y_reg + vel_y_eff) 
                                                            : (Y_MAX_EFF);
-    end else if (!x_neg && vel_y_eff > 0) begin
+    end else if (x_neg && vel_y_eff > 0) begin
         ship_y_reg <= (ship_y_reg > Y_MIN + vel_y_eff)     ? (ship_y_reg - vel_y_eff) 
                                                            : (Y_MIN);
     end
