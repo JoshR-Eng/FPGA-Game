@@ -1,15 +1,16 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Josh Rawlinson u502778
 // 
 // Create Date: 16.02.2026 11:52:08
 // Design Name: 
 // Module Name: game_top
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T
 // Tool Versions: 
-// Description: 
+// Description: Master top-level module that instantiates and wires together
+//              all game components, inputs, outputs and the VGA display
 // 
 // Dependencies: 
 // 
@@ -160,13 +161,13 @@ localparam CURSOR_SPEED   = 10;
 wire [1:0] difficulty_en = {sw[7], sw[4]}; 
 
 // Power Up Switches
-wire speed_boost_en  = sw[1];      // Ship moves faster
+wire speed_boost_en = sw[1];      // Ship moves faster
 wire shield_en      = sw[3];      // Suppresses life loss on hit
 wire rapid_fire_en  = sw[5];      // Faster gun cooldown
 
 // Hidden Easter Eggs: Nightmare Mode
 //  Activated if player tries to use multiple power ups
-//  but if sw[2] active then don't active
+//  but if sw[2] also deactivated then don't active
 wire nightmare_en = (sw[5] & sw[3] & sw[1] & ~sw[2]);
 
 // Final effective signals - nightmare overrides shield, locks diff to max
@@ -177,6 +178,100 @@ wire        rapid_fire  = rapid_fire_en | nightmare_en;
 // ==========================================================
 // --- Game Logic Modules
 // ==========================================================
+
+// Game State Logic
+gameState game_inst (
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick_ungated),
+  .start_trigger(btn[1]),
+  .astr_active_packed(astr_active_packed),
+  .ship_hit(ship_hit),
+  .astr_hit(astr_hit),
+  .health(health),
+  .score(score),
+  .blink(blink),
+  .game_active(game_active),
+  .game_state(game_state),
+  .new_game(new_game),
+  .shield_en(shield)
+);
+
+// Collision Logic
+collisions #(
+  .MAX_BULLETS(MAX_BULLETS),
+  .MAX_ASTEROIDS(MAX_ASTEROIDS),
+  .SHIP_WIDTH(SHIP_WIDTH),
+  .SHIP_HEIGHT(SHIP_HEIGHT)
+  ) collisions_inst (
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick),
+  .bul_x_packed(bul_x_packed),
+  .bul_y_packed(bul_y_packed),
+  .bul_active_packed(bul_active_packed),
+  .ship_x(ship_x),
+  .ship_y(ship_y),
+  .astr_x_packed(astr_x_packed),
+  .astr_y_packed(astr_y_packed),
+  .astr_active_packed(astr_active_packed),
+  .astr_size_packed(astr_size_packed),
+  .bul_hit(bul_hit),
+  .astr_hit(astr_hit),
+  .ship_hit(ship_hit)
+);
+
+// Heat Display
+heatDisplay #(
+  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD),
+  .STEP(OVERHEAT_THRESHOLD / 8)
+) heat_inst (
+  .clk(pixclk),
+  .rst(rst),
+  .frame_tick(frame_tick_ungated),
+  .gun_heat(gun_heat),
+  .LED(LED),
+  .nightmare_en(nightmare_en)
+);
+
+// Score Display on Seven-seg Display
+scoreDisplay score_inst(
+  .clk(pixclk),
+  .score(score),
+  .health(health),
+  .a(a), .b(b), .c(c),
+  .d(d), .e(e), .f(f),
+  .g(g),
+  .an(an)
+);
+
+// ==========================================================
+// --- Game Objects 
+// ==========================================================
+
+// Crosshair Movement
+crosshairMovement #(
+  .SCREEN_X_MIN(SCREEN_X_MIN),
+  .SCREEN_X_MAX(SCREEN_X_MAX),
+  .SCREEN_Y_MIN(SCREEN_Y_MIN),
+  .SCREEN_Y_MAX(SCREEN_Y_MAX),
+  .START_X(CURSOR_START_X),
+  .START_Y(CURSOR_START_Y),
+  .CURSOR_ARM(CURSOR_ARM),
+  .CURSOR_THICK(CURSOR_THICK),
+  .CURSOR_SPEED(CURSOR_SPEED)
+  ) cursor_inst(
+  .clk(pixclk),
+  .rst(rst),
+  .new_game(new_game),
+  .frame_tick(frame_tick),
+  .cursor_x(cursor_x),
+  .cursor_y(cursor_y),
+  .curr_x(curr_x),
+  .curr_y(curr_y),
+  .btn(btn),
+  .on_cursor(on_cursor)
+  );
 
 // Ship Movement (Uses Accelerometer data to move)
 shipMovement #(
@@ -259,97 +354,6 @@ asteroidManager #(
   .new_game(new_game)
 );
 
-// Collision Logic
-collisions #(
-  .MAX_BULLETS(MAX_BULLETS),
-  .MAX_ASTEROIDS(MAX_ASTEROIDS),
-  .SHIP_WIDTH(SHIP_WIDTH),
-  .SHIP_HEIGHT(SHIP_HEIGHT)
-  ) collisions_inst (
-  .clk(pixclk),
-  .rst(rst),
-  .frame_tick(frame_tick),
-  .bul_x_packed(bul_x_packed),
-  .bul_y_packed(bul_y_packed),
-  .bul_active_packed(bul_active_packed),
-  .ship_x(ship_x),
-  .ship_y(ship_y),
-  .astr_x_packed(astr_x_packed),
-  .astr_y_packed(astr_y_packed),
-  .astr_active_packed(astr_active_packed),
-  .astr_size_packed(astr_size_packed),
-  .bul_hit(bul_hit),
-  .astr_hit(astr_hit),
-  .ship_hit(ship_hit)
-);
-
-// Game State Logic
-gameState game_inst (
-  .clk(pixclk),
-  .rst(rst),
-  .frame_tick(frame_tick_ungated),
-  .start_trigger(btn[1]),
-  .astr_active_packed(astr_active_packed),
-  .ship_hit(ship_hit),
-  .astr_hit(astr_hit),
-  .health(health),
-  .score(score),
-  .blink(blink),
-  .game_active(game_active),
-  .game_state(game_state),
-  .new_game(new_game),
-  .shield_en(shield)
-);
-
-// Heat Display
-heatDisplay #(
-  .OVERHEAT_THRESHOLD(OVERHEAT_THRESHOLD),
-  .STEP(OVERHEAT_THRESHOLD / 8)
-) heat_inst (
-  .clk(pixclk),
-  .rst(rst),
-  .frame_tick(frame_tick_ungated),
-  .gun_heat(gun_heat),
-  .LED(LED),
-  .nightmare_en(nightmare_en)
-);
-
-// Score Display on Seven-seg Display
-scoreDisplay score_inst(
-  .clk(pixclk),
-  .score(score),
-  .health(health),
-  .a(a), .b(b), .c(c),
-  .d(d), .e(e), .f(f),
-  .g(g),
-  .an(an)
-);
-
-// Crosshair Movement
-crosshairMovement #(
-  .SCREEN_X_MIN(SCREEN_X_MIN),
-  .SCREEN_X_MAX(SCREEN_X_MAX),
-  .SCREEN_Y_MIN(SCREEN_Y_MIN),
-  .SCREEN_Y_MAX(SCREEN_Y_MAX),
-  .START_X(CURSOR_START_X),
-  .START_Y(CURSOR_START_Y),
-  .CURSOR_ARM(CURSOR_ARM),
-  .CURSOR_THICK(CURSOR_THICK),
-  .CURSOR_SPEED(CURSOR_SPEED)
-  ) cursor_inst(
-  .clk(pixclk),
-  .rst(rst),
-  .new_game(new_game),
-  .frame_tick(frame_tick),
-  .cursor_x(cursor_x),
-  .cursor_y(cursor_y),
-  .curr_x(curr_x),
-  .curr_y(curr_y),
-  .btn(btn),
-  .on_cursor(on_cursor)
-  );
-
-
 // ==========================================================
 // --- Clock Generators
 // ==========================================================
@@ -380,25 +384,9 @@ accOutput accel_inst (
   .acl_data(acl_data)  // {X[14:10], Y[9:5], Z[4:0]}
 );
 
-// Mouse PS/2 Interface
-// mouse mouse_inst (
-//     .clk        (clk),          // 100 MHz system clock — NOT pixclk
-//     .rst        (rst),
-//     .mouse_clk  (PS2_CLK),
-//     .mouse_data (PS2_DATA),
-//     .x_pos      (mouse_dx),
-//     .y_pos      (mouse_dy),
-//     .x_sign     (mouse_x_sign),
-//     .y_sign     (mouse_y_sign),
-//     .left_btn   (left_btn),
-//     .right_btn  (right_btn),
-//     .o_valid    (mouse_valid),
-//     .middle_btn ()              // unconnected — leave open
-// );
-//
 
 // ==========================================================
-// --- Display Logic
+// --- Display Modules 
 // ==========================================================
 
     // Instantiate Drawcon Module
