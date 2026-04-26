@@ -249,6 +249,7 @@ initial begin
   check("T5: state == IDLE after start in GAME_OVER", game_state == IDLE);
 
   // new_game should be high for exactly 1 cycle on transition.
+  send_frame_ticks(1);
   check("T5: new_game == 0 after transition settled", new_game == 1'b0);
 
   // Verify state machine reset values
