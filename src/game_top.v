@@ -12,7 +12,7 @@
 // Description: Master top-level module that instantiates and wires together
 //              all game components, inputs, outputs and the VGA display
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created
