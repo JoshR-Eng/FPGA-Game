@@ -44,9 +44,7 @@ module game_top(
     output a,b,c,d,e,f,g,
     output [7:0] an
 
-    // Mouse
-//    input PS2_CLK,
-//    input PS2_DATA
+
     );
 
 // ==========================================================
@@ -102,15 +100,6 @@ wire        new_game;
 wire        game_active;
 wire [1:0]  game_state;
 wire [7:0]  gun_heat;     
-
-// Mouse
-//wire [7:0]  mouse_dx;
-//wire [7:0]  mouse_dy;
-//wire        mouse_x_sign;
-//wire        mouse_y_sign;
-//wire        mouse_valid;
-//wire        left_btn;
-//wire        right_btn;
 
 // ==========================================================
 // --- CONFIGURATION
@@ -176,6 +165,24 @@ wire        shield      = shield_en     & ~nightmare_en;
 wire        rapid_fire  = rapid_fire_en | nightmare_en;
 
 // ==========================================================
+// --- Pipeline Parameters
+// ==========================================================
+
+// Registered copies of asteroid state for timing closure
+// (breaks the long net from asteroidManager -> drawcon/collisions)
+reg [175:0] astr_x_packed_r;
+reg [175:0] astr_y_packed_r;
+reg [15:0]  astr_active_packed_r;
+reg [31:0]  astr_size_packed_r;
+
+always @(posedge pixclk) begin
+    astr_x_packed_r      <= astr_x_packed;
+    astr_y_packed_r      <= astr_y_packed;
+    astr_active_packed_r <= astr_active_packed;
+    astr_size_packed_r   <= astr_size_packed;
+end
+
+// ==========================================================
 // --- Game Logic Modules
 // ==========================================================
 
@@ -212,10 +219,10 @@ collisions #(
   .bul_active_packed(bul_active_packed),
   .ship_x(ship_x),
   .ship_y(ship_y),
-  .astr_x_packed(astr_x_packed),
-  .astr_y_packed(astr_y_packed),
-  .astr_active_packed(astr_active_packed),
-  .astr_size_packed(astr_size_packed),
+  .astr_x_packed(astr_x_packed_r),
+  .astr_y_packed(astr_y_packed_r),
+  .astr_active_packed(astr_active_packed_r),
+  .astr_size_packed(astr_size_packed_r),
   .bul_hit(bul_hit),
   .astr_hit(astr_hit),
   .ship_hit(ship_hit)
@@ -405,11 +412,11 @@ drawcon #(
   .curr_x(curr_x), .curr_y(curr_y),
   .on_bullet(on_bullet),
   .on_cursor(on_cursor),
-  .on_asteroid(on_asteroid),
-  .astr_x_packed(astr_x_packed),       
-  .astr_y_packed(astr_y_packed),       
-  .astr_active_packed(astr_active_packed), 
-  .astr_size_packed(astr_size_packed), 
+  .on_asteroid(on_asteroid_r),
+  .astr_x_packed(astr_x_packed_r),       
+  .astr_y_packed(astr_y_packed_r),       
+  .astr_active_packed(astr_active_packed_r), 
+  .astr_size_packed(astr_size_packed_r), 
   .health(health),                     
   .score(score),                       
   .blink(blink),
