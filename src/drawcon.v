@@ -1,17 +1,22 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson
+//           A. Lee-Wardell
 // 
 // Create Date: 22.02.2026 14:12:10
 // Design Name: 
 // Module Name: drawcon
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
-// Description: 
+// Description: This module uses a priority multiplexor to display the game
+//              onto the game via VGA.
+//              It contains 8 memory blocks for the different sprites used
+//              and determines if the current pixel being drawn overlaps on
+//              an object and calls the required RGB values as needed
 // 
-// Dependencies: 
+// Dependencies: None 
 // 
 // Revision:
 // Revision 0.01 - File Created

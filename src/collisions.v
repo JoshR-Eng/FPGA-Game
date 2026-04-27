@@ -1,17 +1,21 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: A. Lee-Wardell 
+//           J. Rawlinson
 // 
 // Create Date: 10.04.2026 16:25:32 
 // Design Name: 
 // Module Name: collisions 
 // Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
+// Target Devices: Nexys A7-100T 
+// Tool Versions:
+// Description: Raises collision flags when bullets, asteroids or ship
+//              collide. Calculations use object positions and evaluate
+//              if objects hit-box overlap. Each hit-box is calculated
+//              using the objects position plus sprite size
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created

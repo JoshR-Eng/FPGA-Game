@@ -1,17 +1,18 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson 
 // 
 // Create Date: 17.04.2026 17:26:30
 // Design Name: 
 // Module Name: crosshairMovement 
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
-// Description: 
+// Description: This module takes input of the 5 buttons on the Nexys board
+//              and uses that to move the crosshairs position
 // 
-// Dependencies: 
+// Dependencies: None 
 // 
 // Revision:
 // Revision 0.01 - File Created

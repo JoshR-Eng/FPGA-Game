@@ -1,17 +1,23 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson 
+//           A. Lee-Wardell
 // 
 // Create Date: 16.02.2026 11:52:08
 // Design Name: 
 // Module Name: asteroidManager
 // Promect Name: 
 // Target Devices: 
-// Tool Versions: 
-// Description: 
+// Tool Versions: Nexys A7-100T 
+// Description: This contains the logic for spawning, despawning and moving
+//              all the asteroids used in the game.
+//              It contains a LFSR for sudo-random number generation to
+//              determine the size, position and velocity of the asteroid.
+//              It also handles the difficulty scaling by varying the spawn
+//              timer.
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created

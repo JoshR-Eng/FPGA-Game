@@ -1,17 +1,20 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: A. Lee-Wardell
+//           J. Rawlinson
 // 
 // Create Date: 23.03.2026 12:21:21
 // Design Name: 
 // Module Name: PlayerMovement
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
-// Description: 
+// Description: This module manages the ship sprites movement.
+//              It uses the on-board accelerometers data and 
+//              maps the board tilt to move the ship across the screen.
 // 
-// Dependencies: 
+// Dependencies: None 
 // 
 // Revision:
 // Revision 0.01 - File Created

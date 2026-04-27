@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: Josh Rawlinson u502778
+// Engineer: J. Rawlinson
 // 
 // Create Date: 16.02.2026 11:52:08
 // Design Name: 
@@ -43,8 +43,6 @@ module game_top(
     // Seven-seg display
     output a,b,c,d,e,f,g,
     output [7:0] an
-
-
     );
 
 // ==========================================================

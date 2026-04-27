@@ -1,17 +1,19 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson 
 // 
 // Create Date: 02.02.2026 14:31:41
 // Design Name: 
 // Module Name: seginterface
 // Project Name: 
 // Target Devices: 
-// Tool Versions: 
-// Description: 
+// Tool Versions: Nexys A7-100T 
+// Description: This module takes the desired number and it's position
+//              to be displayed on the seven-seg and outputs which of
+//              the seven segments should be turned on 
 // 
-// Dependencies: 
+// Dependencies: None 
 // 
 // Revision:
 // Revision 0.01 - File Created

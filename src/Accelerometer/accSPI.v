@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Aiden Lee-Wardell 
 // 
 // Create Date: 09.03.2026 12:27:07
 // Design Name: 
 // Module Name: AccSPI
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
-// Description: 
+// Description: SPI Interface for communicating with on-board Accelerometer
 // 
-// Dependencies: 
+// Dependencies: None 
 // 
 // Revision:
 // Revision 0.01 - File Created

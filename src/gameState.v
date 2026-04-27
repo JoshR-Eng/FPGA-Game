@@ -1,17 +1,21 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson 
 // 
 // Create Date: 16.04.2026 13:26:15
 // Design Name: 
 // Module Name: gameState
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
-// Description: 
+// Description: A FSM state machine to manage the current game state.
+//              the game can be in IDLE, PLAYING or GAME_OVER state.
+//              the player can move between idle and game over state with
+//              btn[1] while game over is entered when players health 
+//              reaches 0
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created

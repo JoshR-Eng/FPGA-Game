@@ -1,17 +1,18 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson 
 // 
 // Create Date: 02.02.2026 14:31:41
 // Design Name: 
 // Module Name: scoreDisplay 
 // Project Name: 
 // Target Devices: 
-// Tool Versions: 
-// Description: 
+// Tool Versions: Nexys A7-100T 
+// Description: Interfacing module with seven segment display
+//              to display the player health and score on display
 // 
-// Dependencies: 
+// Dependencies: None
 // 
 // Revision:
 // Revision 0.01 - File Created

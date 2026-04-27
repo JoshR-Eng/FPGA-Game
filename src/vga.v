@@ -1,17 +1,23 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson 
 // 
 // Create Date: 09.02.2026 11:12:49
 // Design Name: 
 // Module Name: vga
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
 // Description: 
 // 
-// Dependencies: 
+// Dependencies: This module recieves the RGB values from `drawcon.v` and
+//               sends these values to the display over vga.
+//               It operates at 60Hz for a 1440x900 display.
+//               Once the entire frame has been drawn, a value `frame_tick`
+//               is asserted to gate all the game logic and eliminate 
+//               screen tear.
+//
 // 
 // Revision:
 // Revision 0.01 - File Created

@@ -1,17 +1,21 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson 
 // 
 // Create Date: 16.04.2026 21:39:40 
 // Design Name: 
 // Module Name: heatDisplay 
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
-// Description: 
+// Description: This module maps the 'Gun heat' to the 16 on-board LEDs
+//              2 LEDs are linearly turned on/off as gun heat changes
+//              once the gun had overheated and the player can no longer
+//              shoot, the LEDs flash until cooldown below threshold.
+//              LEDs also flash once the player activates 'nightmare mode'
 // 
-// Dependencies: 
+// Dependencies: None 
 // 
 // Revision:
 // Revision 0.01 - File Created

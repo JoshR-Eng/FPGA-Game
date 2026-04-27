@@ -1,17 +1,21 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson
 // 
 // Create Date: 24.03.2026 16:32:11 
 // Design Name: 
 // Module Name: game_top
 // Project Name: 
-// Target Devices: 
+// Target Devices: Nexys A7-100T 
 // Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
+// Description: This module manages the spawning, movement and vector
+//              calculations for the bullets.
+//              Calculated cursor-to-ship vectors by arithmetic-right-shifting
+//              x,y components by MSB position of dominant axis and clamping
+//              the results to a signed 4-bit range
+//
+// Dependencies: None 
 // 
 // Revision:
 // Revision 0.01 - File Created
