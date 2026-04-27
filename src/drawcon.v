@@ -152,7 +152,7 @@ assign on_gamebar = (curr_y < SCREEN_Y_MIN);  // strictly less than
 
 // --- HEARTS -----------------------------------------------
 // Heart positions: right zone of info bar (x = 1024–1439, y = 0–99)
-// Space 3 hearts evenly across 416px — centres at x=1090, 1230, 1370
+// Space 3 hearts evenly across 416px - centres at x=1090, 1230, 1370
 localparam HEART_Y0 = 25;   // top of heart within bar
 wire heart_on_0 = (curr_x >= 1050) && (curr_x < 1100) &&
                   (curr_y >= HEART_Y0) && (curr_y < HEART_Y0 + 50);
@@ -175,11 +175,11 @@ localparam STAR_COUNT = 64;
 reg [10:0] star_x [0:STAR_COUNT-1];
 reg [10:0] star_y [0:STAR_COUNT-1];
 
-// Twinkle: 27-bit free counter → upper bits give ~1Hz tick
+// Twinkle: 27-bit free counter  upper bits give ~1Hz tick
 reg [26:0] twinkle_ctr;
 always @(posedge clk) twinkle_ctr <= twinkle_ctr + 1;
 
-// Each star blinks independently — XOR index with counter phase
+// Each star blinks independently - XOR index with counter phase
 // star i is ON when twinkle_ctr[25:23] != i[2:0]  (simple phase stagger)
 
 
@@ -188,7 +188,7 @@ always @(posedge clk) twinkle_ctr <= twinkle_ctr + 1;
 // --- Asteroid Hit detection & Size Evaluator 
 // ==========================================================
 
-// --- Asteroid hit detection (combinatorial — runs before clock edge)
+// --- Asteroid hit detection (combinatorial - runs before clock edge)
 // Determine which asteroid the current pixel falls on, and its local coords
 always @* begin
     astr_draw_hit_comb  = 1'b0;
@@ -268,7 +268,7 @@ always @* begin
         mux_b = astr_pixel_sel[3:0];
     end
 
-    // Layer 2: Bullets (geometric — keep as-is)
+    // Layer 2: Bullets (geometric - keep as-is)
     if (on_bullet) begin
         mux_r = 4'hF; mux_g = 4'hF; mux_b = 4'h0;
     end
@@ -280,12 +280,12 @@ always @* begin
         mux_b = ship_pixel[3:0];
     end
 
-    // Layer 4: Crosshair (geometric — keep as-is)
+    // Layer 4: Crosshair (geometric - keep as-is)
     if (on_cursor) begin
         mux_r = 4'hF; mux_g = 4'hF; mux_b = 4'hF;
     end
 
-    // Layer 5: Info bar background (solid colour — drawn first, overlaid by BRAM)
+    // Layer 5: Info bar background (solid colour - drawn first, overlaid by BRAM)
     if (on_gamebar) begin
         mux_r = 4'hd; 
         mux_g = 4'hc; 
