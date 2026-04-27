@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson
 // 
 // Create Date: 09.02.2026 11:41:29
 // Design Name: 
@@ -9,7 +9,8 @@
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
-// Description: 
+// Description: A testbench to evaluate the functionality of the
+//              `vga.v` module
 // 
 // Dependencies: 
 // 

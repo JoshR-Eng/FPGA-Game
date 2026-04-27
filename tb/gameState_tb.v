@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: J. Rawlinson
 // 
 // Create Date: 21.04.2026 16:15:29
 // Design Name: 
@@ -9,7 +9,8 @@
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
-// Description: 
+// Description: A test bench to evalute the functionality of the 
+//              `gameState.v` module
 // 
 // Dependencies: 
 // 
