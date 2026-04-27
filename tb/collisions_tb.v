@@ -294,7 +294,7 @@ endtask
 
 // Convenience assertion task — prints PASS/FAIL and updates counters
 task check;
-    input [127:0]   test_name;  // string label
+    input [511:0]   test_name;  // string label
     input           condition;  // 1 = pass
     begin
         if (condition) begin
