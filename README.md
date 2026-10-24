@@ -1,12 +1,6 @@
 # Asteroid Collision — FPGA Game on Nexys A7-100T
 
-![Platform](https://img.shields.io/badge/Platform-Nexys%20A7--100T-blue)
-![Device](https://img.shields.io/badge/FPGA-Artix--7%20XC7A100T-brightgreen)
-![Language](https://img.shields.io/badge/HDL-Verilog--2001-orange)
-![Tool](https://img.shields.io/badge/Tool-Vivado%202024-red)
-![Clock](https://img.shields.io/badge/Clock-106%20MHz-yellow)
-
-A fully custom RTL implementation of an Asteroids-style top-down shooter, synthesised on the Xilinx Artix-7 FPGA. Every component — from the VGA timing generator and SPI accelerometer driver to the parallel collision engine and priority-multiplexed renderer — is hand-written in Verilog with no soft-processor or IP cores for game logic.
+A fully custom RTL implementation of an Asteroids-style top-down shooter, synthesised on the Xilinx Artix-7 FPGA. Every component from the VGA timing generator and SPI accelerometer driver to the parallel collision engine and priority-multiplexed renderer is hand-written in Verilog with no soft-processor or IP cores for game logic.
 
 ---
 
@@ -48,7 +42,7 @@ A fully custom RTL implementation of an Asteroids-style top-down shooter, synthe
 | Projectiles | Up to 16 simultaneous bullets |
 | Asteroids | Up to 16 simultaneous, 3 sizes (24×24, 48×48, 96×96 px) |
 | Lives | 3 with 120-frame invincibility window per hit |
-| Score display | 8-digit seven-segment (binary → BCD → 7-seg) |
+| Score display | 8-digit seven-segment (binary -> BCD -> 7-seg) |
 | Heat display | 16 on-board LEDs as a left-filling bargraph |
 | Sprites | 8 Block RAMs (ship, 3× asteroid sizes, hearts, infobar, title, game-over) |
 | Creative features | 4 difficulty tiers, speed boost, shield, rapid fire, Nightmare Mode easter egg |
@@ -57,13 +51,11 @@ A fully custom RTL implementation of an Asteroids-style top-down shooter, synthe
 
 ## Technical Highlights
 
-These are the engineering decisions worth understanding:
-
 - **Single-clock domain, frame-gated architecture** — all game logic runs at 106 MHz but advances state exactly once per frame via a `frame_tick` clock-enable, eliminating screen tearing by design.
 - **Shift-based vector normalisation** — bullet direction is computed without a hardware divider using a priority-encoded arithmetic right-shift over 8 breakpoints, mapped to a two-stage pipeline across clock boundaries.
 - **176-bit flat-packed inter-module buses** — Verilog-2001's lack of multi-dimensional ports is solved by packing all 16-slot object arrays into flat `[175:0]` buses at module boundaries and unpacking locally with `generate` loops.
-- **Maximal-length 16-bit LFSR** — pseudo-random asteroid spawn uses the polynomial \(x^{16} + x^{14} + x^{13} + x^{11} + 1\), guaranteeing a period of 65,535 frames. A single LFSR state is bit-sliced across position, size, velocity, and edge selection simultaneously.
-- **256 parallel AABB comparators** — all 16 × 16 bullet–asteroid overlap tests evaluate combinatorially within a single clock cycle; no iterative loop or sequencer required.
+- **Maximal-length 16-bit LFSR** — pseudo-random asteroid spawn uses the polynomial $x^{16} + x^{14} + x^{13} + x^{11} + 1$, guaranteeing a period of 65,535 frames. A single LFSR state is bit-sliced across position, size, velocity, and edge selection simultaneously.
+- **256 parallel AABB comparators** — all 16 × 16 bullet-asteroid overlap tests evaluate combinatorially within a single clock cycle; no iterative loop or sequencer required.
 - **13-bit BRAM pixel format with transparency** — bit 12 acts as a per-pixel transparency flag, allowing the priority-mux renderer to correctly layer sprites without a dedicated colour-key comparison.
 - **Hardware-efficient power-ups** — speed boost uses a single left-shift instead of a multiplier; shield is a combinatorial mask on the health decrement; rapid fire shifts the heat cooldown rate; all synthesise to pure LUT logic.
 
@@ -77,11 +69,11 @@ The design is organised into four functional clusters, all synchronous on a sing
 ┌─────────────────────────────────────────────────────────────────┐
 │                         GAME TOP (game_top.v)                   │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                    Accelerometer                          │   │
-│  │   iclk ──► accSPI ──► accOutput ──► acl_data[14:0]      │   │
+│  │                    Accelerometer                         │   │
+│  │   iclk ──► accSPI ──► accOutput ──► acl_data[14:0]       │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │  pixclk ─────────────────────────────────────────────────────►  │
-│                                                                  │
+│                                                                 │
 │  ┌─── GAME LOGIC (frame_tick gated) ───────────────────────┐    │
 │  │  gameState.v ◄──────────────────── ship_hit             │    │
 │  │       │ game_state / new_game       collisions.v        │    │
@@ -94,12 +86,12 @@ The design is organised into four functional clusters, all synchronous on a sing
 │  ┌─── GAME OBJECTS (frame_tick gated) ──┴───────┴────────────┐  │
 │  │  shipMovement ──► crosshairMovement ──► bulletManager     │  │
 │  │                                         asteroidManager   │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                            Position & States ▼                   │
+│  └───────────────────────────────────────────────────────────┘  │
+│                            Position & States ▼                  │
 │  ┌─── DRAWCON ──────────────────────────────────────────────┐   │
 │  │  Priority-mux renderer (10 layers, BRAM + geometric)     │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            draw_r/g/b ▼                          │
+│                            draw_r/g/b ▼                         │
 │  ┌─── VGA (vga.v) ──────────────────────────────────────────┐   │
 │  │  hcount/vcount ──► hsync, vsync, pix_r/g/b, frame_tick   │   │
 │  └──────────────────────────────────────────────────────────┘   │
@@ -116,18 +108,18 @@ The `frame_tick` signal — a single-cycle pulse generated at `hcount=0, vcount=
 |---|---|---|---|
 | `game_top.v` | Top | Wiring hub, localparams, feature decode | All inter-module connections |
 | `vga.v` | Platform | Sync generator, counter wrap | `hsync`, `vsync`, `curr_x/y`, `frame_tick` |
-| `clk_wiz_0` | Platform | PLL: 100 MHz → 106 MHz | `pixclk` |
+| `clk_wiz_0` | Platform | PLL: 100 MHz -> 106 MHz | `pixclk` |
 | `iclk.v` | Accel | SPI clock divider | `spi_clk` |
 | `accSPI.v` | Accel | Full-duplex SPI master (ADXL362) | `acl_data[14:0]` |
 | `accOutput.v` | Accel | Data deserialiser | `acl_x/y/z` |
-| `shipMovement.v` | Objects | Tilt → velocity → clamped position | `ship_x/y` |
+| `shipMovement.v` | Objects | Tilt -> velocity -> clamped position | `ship_x/y` |
 | `crosshairMovement.v` | Objects | Button-driven cursor | `cursor_x/y` |
 | `bulletManager.v` | Objects | 16-slot bullet pool, fire pipeline, heat | `bul_*_packed[175:0]`, `gun_heat` |
 | `asteroidManager.v` | Objects | 16-slot asteroid pool, LFSR spawn | `astr_*_packed[175:0]` |
 | `collisions.v` | Logic | 256+16 parallel AABB comparators | `bul_hit[15:0]`, `astr_hit[15:0]`, `ship_hit` |
 | `gameState.v` | Logic | 3-state Moore FSM, health, score, blink | `game_state`, `new_game`, `health`, `blink` |
-| `scoreDisplay.v` | Logic | Binary → BCD → 7-seg multiplexer | `a_to_g`, `an[7:0]` |
-| `heatDisplay.v` | Logic | Heat → LED bargraph | `led[15:0]` |
+| `scoreDisplay.v` | Logic | Binary -> BCD -> 7-seg multiplexer | `a_to_g`, `an[7:0]` |
+| `heatDisplay.v` | Logic | Heat -> LED bargraph | `led[15:0]` |
 | `drawcon.v` | Render | 10-layer priority-mux compositor | `draw_r/g/b` |
 
 ---
@@ -138,9 +130,11 @@ The `frame_tick` signal — a single-cycle pulse generated at `hcount=0, vcount=
 
 The display target is 1440×900 @ 60 Hz. The required pixel clock is derived from the total raster dimensions including blanking:
 
-\[f_\text{pixel} = H_\text{total} \times V_\text{total} \times f_\text{refresh} = 1904 \times 932 \times 60 \approx 106.6\,\text{MHz}\]
+```math
+f_\text{pixel} = H_\text{total} \times V_\text{total} \times f_\text{refresh} = 1904 \times 932 \times 60 \approx 106.6\,\text{MHz}
+```
 
-`vga.v` implements two free-running counters: `hcount` (0–1903) and `vcount` (0–931). The sync pulses are asserted at the correct count boundaries:
+`vga.v` implements two free-running counters: `hcount` (0-1903) and `vcount` (0-931). The sync pulses are asserted at the correct count boundaries:
 
 ```verilog
 // hsync: active-low, 152 clocks wide
@@ -188,7 +182,7 @@ A hardware-level axis swap compensates for the sensor's physical orientation on 
 The `tilt_to_vel()` function converts raw two's-complement axis data to a signed pixel velocity:
 1. Decompose to sign + magnitude
 2. Apply a 2-LSB deadzone (suppresses mechanical noise on a desk)
-3. Map magnitude 2–15 → velocity 0–4 px/frame
+3. Map magnitude 2-15 -> velocity 0-4 px/frame
 
 Position is hard-clamped to effective screen bounds accounting for the 100×100 px sprite footprint, preventing partial off-screen rendering.
 
@@ -201,10 +195,10 @@ Exact vector normalisation requires a hardware divider — expensive in LUTs and
 1. Compute `raw_dx = cursor_x - ship_centre_x`, `raw_dy = cursor_y - ship_centre_y`
 2. Find the dominant axis (larger absolute value)
 3. Encode the dominant magnitude into a shift amount `shift_n` across 8 breakpoints:
-   - `dominant > 64` → `shift_n = 3` (÷8)
-   - `dominant > 32` → `shift_n = 2` (÷4)
-   - `dominant > 16` → `shift_n = 1` (÷2)
-   - else → `shift_n = 0`
+   - `dominant > 64` -> `shift_n = 3` (÷8)
+   - `dominant > 32` -> `shift_n = 2` (÷4)
+   - `dominant > 16` -> `shift_n = 1` (÷2)
+   - else -> `shift_n = 0`
 4. Apply `scaled_dx = raw_dx >>> shift_n`, `scaled_dy = raw_dy >>> shift_n`
 5. Result: velocity in range `[-7, +7]` on each axis
 
@@ -228,9 +222,11 @@ assign scaled_dy = $signed(raw_dy) >>> shift_n_reg;
 
 Asteroid spawn events use a 16-bit Fibonacci LFSR with a mathematically selected maximal-length tap polynomial:
 
-\[b[n] = b[n-16] \oplus b[n-14] \oplus b[n-13] \oplus b[n-11]\]
+```math
+b[n] = b[n-16] \oplus b[n-14] \oplus b[n-13] \oplus b[n-11]
+```
 
-This corresponds to the primitive polynomial \(x^{16} + x^{14} + x^{13} + x^{11} + 1\), guaranteeing a sequence period of \(2^{16} - 1 = 65{,}535\) frames (~18 minutes at 60 Hz) before any spawn pattern repeats.
+This corresponds to the primitive polynomial $x^{16} + x^{14} + x^{13} + x^{11} + 1$, guaranteeing a sequence period of $2^{16} - 1 = 65{,}535$ frames (~18 minutes at 60 Hz) before any spawn pattern repeats.
 
 A single LFSR state is bit-sliced across all spawn parameters simultaneously:
 
@@ -249,11 +245,13 @@ The spawn interval is controlled by a countdown timer, configurable from 180 fra
 
 `collisions.v` evaluates all object interactions combinatorially within a single clock cycle using **axis-aligned bounding box (AABB)** overlap tests:
 
-\[\text{hit}(A, B) \iff |x_A - x_B| < r_A + r_B \;\wedge\; |y_A - y_B| < r_A + r_B\]
+```math
+\text{hit}(A, B) \iff |x_A - x_B| < r_A + r_B \;\wedge\; |y_A - y_B| < r_A + r_B
+```
 
 The implementation unfolds all comparisons in parallel:
-- **256 bullet–asteroid comparators** (16 bullets × 16 asteroids)
-- **16 ship–asteroid comparators**
+- **256 bullet-asteroid comparators** (16 bullets × 16 asteroids)
+- **16 ship-asteroid comparators**
 
 No loop or sequencer is required — all 272 comparisons resolve in a single combinatorial pass, producing `bul_hit[15:0]`, `astr_hit[15:0]`, and `ship_hit` simultaneously.
 
@@ -279,7 +277,7 @@ IDLE ─────────────────────► PLAYING
   └──────────────── GAME_OVER ◄──┘
 ```
 
-The `new_game` signal is a **one-cycle pulse** generated on the GAME_OVER → IDLE transition. It resets all object managers and positional vectors across the entire design without requiring a board-level hard reset — every module samples `new_game` on the next `frame_tick`.
+The `new_game` signal is a **one-cycle pulse** generated on the GAME_OVER -> IDLE transition. It resets all object managers and positional vectors across the entire design without requiring a board-level hard reset — every module samples `new_game` on the next `frame_tick`.
 
 A 60-frame grace period on entering `PLAYING` prevents immediate ship collisions during spawn.
 
@@ -297,20 +295,20 @@ The gun heat register `gun_heat_reg` implements a thermal model for the firing r
 | Rapid fire mode | `gun_heat -= 3` per frame |
 | Overheat feedback | All 16 LEDs blink at ~3.75 Hz |
 
-`heatDisplay.v` maps the heat register to the 16 LEDs as a left-filling bargraph, dividing the 0–200 range into 8 equal steps of 25 LSB per LED pair. The blink is driven by `blink_counter[3]`, toggling every 8 frame ticks.
+`heatDisplay.v` maps the heat register to the 16 LEDs as a left-filling bargraph, dividing the 0-200 range into 8 equal steps of 25 LSB per LED pair. The blink is driven by `blink_counter[3]`, toggling every 8 frame ticks.
 
 ---
 
 ### Switch-Mapped Features & Nightmare Mode
 
-Five gameplay modifiers are decoded from `sw[7:0]` as direct combinatorial select lines — no registers required:
+Five gameplay modifiers are decoded from `sw[7:0]` as direct combinatorial select lines - no registers required:
 
 | Feature | Switch | Hardware Implementation |
 |---|---|---|
 | Difficulty | `{sw[7], sw[4]}` | Spawn interval mux: 180 / 120 / 60 / 30 frames |
 | Speed Boost | `sw[1]` | `velocity << 1` — single left shift, zero LUT overhead vs. multiplier |
 | Shield | `sw[3]` | Combinatorial mask on health decrement |
-| Rapid Fire | `sw[5]` | Cooldown rate select: ×1 nominal → ×3 |
+| Rapid Fire | `sw[5]` | Cooldown rate select: ×1 nominal -> ×3 |
 | **Nightmare Mode** | `sw[5] & sw[3] & sw[1] & ~sw[2]` | Overrides all above |
 
 **Nightmare Mode** is triggered when a player attempts to activate all three power-ups simultaneously. A combinatorial override fires: the shield is forcibly suppressed, the spawn interval locks to maximum difficulty (30 frames), and the LEDs blink continuously regardless of gun heat state.
@@ -372,7 +370,7 @@ Covers four corner-case scenarios. **18 tests, 18 PASS, 0 FAIL:**
 
 ### Testbench 3 — Game State FSM (`gameState_tb.v`)
 
-Exercises all reachable state transitions (`IDLE → PLAYING → GAME_OVER → IDLE`) and verifies:
+Exercises all reachable state transitions (`IDLE -> PLAYING -> GAME_OVER -> IDLE`) and verifies:
 - `new_game` fires as a single-cycle pulse on re-entry to `IDLE`
 - `invis_timer` loads 120 on `ship_hit` and counts down correctly
 - `blink` (derived from `invis_timer[3]`) toggles every 8 frames
@@ -392,10 +390,10 @@ FPGA-Game/
 │   ├── collisions.v            # 272 parallel AABB comparators
 │   ├── bulletManager.v         # 16-slot bullet pool & fire pipeline
 │   ├── asteroidManager.v       # 16-slot asteroid pool & LFSR spawner
-│   ├── shipMovement.v          # Accelerometer → velocity → position
+│   ├── shipMovement.v          # Accelerometer -> velocity -> position
 │   ├── crosshairMovement.v     # Button-driven crosshair
-│   ├── scoreDisplay.v          # Binary → BCD → 7-segment multiplexer
-│   ├── heatDisplay.v           # Heat register → LED bargraph
+│   ├── scoreDisplay.v          # Binary -> BCD -> 7-segment multiplexer
+│   ├── heatDisplay.v           # Heat register -> LED bargraph
 │   ├── Mouse/                  # PS/2 mouse driver (stubbed, future work)
 │   └── Accelerometer/
 │       ├── iclk.v              # SPI clock divider
@@ -439,14 +437,14 @@ FPGA-Game/
 
 4. **Run synthesis and implementation**
    ```
-   Flow → Run Synthesis
-   Flow → Run Implementation
-   Flow → Generate Bitstream
+   Flow -> Run Synthesis
+   Flow -> Run Implementation
+   Flow -> Generate Bitstream
    ```
 
 5. **Program the board**
    ```
-   Open Hardware Manager → Program Device → Select .bit file
+   Open Hardware Manager -> Program Device -> Select .bit file
    ```
 
 ### Simulation (Icarus Verilog)
@@ -486,7 +484,7 @@ vvp sim_collision
 
 | Enhancement | Approach |
 |---|---|
-| Circular collision masks | \(x^2 + y^2 < r^2\) using Artix-7 DSP48 blocks — no impact on LUT fabric |
+| Circular collision masks | $x^2 + y^2 < r^2$ using Artix-7 DSP48 blocks — no impact on LUT fabric |
 | PS/2 mouse aiming | Activate the existing driver with proper CDC FIFO on the data path |
 | Asteroid splitting | Spawn 2× medium on large destruction, 2× small on medium |
 | Persistent high scores | BRAM with `INIT` attributes or SPI flash across power cycles |
